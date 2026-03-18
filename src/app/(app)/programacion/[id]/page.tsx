@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth-utils";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/lib/button-variants";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Lightbulb, Gamepad2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";

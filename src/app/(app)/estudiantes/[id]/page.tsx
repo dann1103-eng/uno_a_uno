@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/lib/button-variants";
 import { MetricsRadarChart } from "@/components/metrics-radar-chart";
 import Link from "next/link";
 import { ArrowLeft, PlusCircle } from "lucide-react";
