@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \":*)",
+      "Bash(node -e \":*)",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const d=JSON.parse\\(fs.readFileSync\\(String.raw\\\\`C:\\\\Users\\\\Daniel\\\\.claude\\\\projects\\\\C--Users-Daniel-Desktop-gestor-mentores-uno-a-uno\\\\c8bed03f-d9f7-4371-8d9a-4699c8bfc972\\\\tool-results\\\\toolu_01EU4uX5QCjkTpsUePLjnhLq.json\\\\`,''utf8''\\)\\); console.log\\(d[0].text.substring\\(0,20000\\)\\);\")",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --yes)",
+      "Read(//c/Users/Daniel/Desktop/**)",
+      "Bash(npx create-next-app@latest gestor-mentores --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --yes)",
+      "Bash(cp -r gestor-mentores/* gestor-mentores/.* \"gestor mentores uno a uno/\")",
+      "Bash(rm -rf gestor-mentores)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d --yes)"
+    ]
+  }
+}
