@@ -1,0 +1,17 @@
+import { getCurrentUser } from "@/lib/auth-utils";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+
+export default async function MetasPage() {
+  const user = await getCurrentUser();
+
+  if (user.role !== "MENTOR") redirect("/dashboard");
+
+  const student = await prisma.student.findUnique({
+    where: { mentorId: user.id },
+  });
+
+  if (!student) redirect("/dashboard");
+
+  redirect(`/estudiantes/${student.id}?tab=metas`);
+}

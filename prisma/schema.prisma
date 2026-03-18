@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  MENTOR
+  SUPERVISOR
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(MENTOR)
+  createdAt    DateTime  @default(now())
+
+  student      Student?
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Student {
+  id        String    @id @default(cuid())
+  name      String
+  age       Int
+  grade     String
+  mentorId  String    @unique
+  createdAt DateTime  @default(now())
+
+  mentor    User      @relation(fields: [mentorId], references: [id])
+  sessions  Session[]
+  goals     Goal[]
+
+  @@map("students")
+}
+
+model Session {
+  id             String    @id @default(cuid())
+  studentId      String
+  mentorId       String
+  date           DateTime
+  formationTopic String
+  notes          String    @default("")
+  nextSteps      String    @default("")
+  createdAt      DateTime  @default(now())
+
+  student        Student            @relation(fields: [studentId], references: [id])
+  mentor         User               @relation(fields: [mentorId], references: [id])
+  evaluation     SessionEvaluation?
+
+  @@map("sessions")
+}
+
+model SessionEvaluation {
+  id             String  @id @default(cuid())
+  sessionId      String  @unique
+  discipline     Int
+  responsibility Int
+  study          Int
+  relationships  Int
+  balance        Int
+
+  session        Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("session_evaluations")
+}
+
+model Goal {
+  id          String     @id @default(cuid())
+  studentId   String
+  title       String
+  description String     @default("")
+  startDate   DateTime
+  endDate     DateTime?
+  status      GoalStatus @default(ACTIVE)
+
+  student     Student      @relation(fields: [studentId], references: [id])
+  updates     GoalUpdate[]
+
+  @@map("goals")
+}
+
+model GoalUpdate {
+  id           String   @id @default(cuid())
+  goalId       String
+  date         DateTime @default(now())
+  progressNote String
+
+  goal         Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@map("goal_updates")
+}
+
+model ProgrammingTopic {
+  id                 String  @id @default(cuid())
+  title              String
+  weekNumber         Int     @unique
+  description        String
+  talkingPoints      String
+  activitySuggestion String
+  resourcesUrl       String?
+
+  @@map("programming_topics")
+}
