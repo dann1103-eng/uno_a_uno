@@ -61,7 +61,7 @@ export function CreateUserForm() {
             </div>
             <div className="space-y-2">
               <Label>Rol</Label>
-              <Select value={role} onValueChange={setRole}>
+              <Select value={role} onValueChange={(v) => { if (v) setRole(v); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
