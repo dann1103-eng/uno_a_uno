@@ -12,6 +12,7 @@ import {
   Users,
   GraduationCap,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -47,6 +48,7 @@ const supervisorNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Mentores", url: "/mentores", icon: Users },
   { title: "Estudiantes", url: "/estudiantes", icon: GraduationCap },
+  { title: "Usuarios", url: "/admin", icon: ShieldCheck },
 ];
 
 export function AppSidebar({ user }: { user: User }) {
