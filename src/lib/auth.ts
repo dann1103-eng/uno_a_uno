@@ -19,10 +19,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         // Protección contra fuerza bruta: máximo 5 intentos por email cada 60s
-        const { success } = await loginRatelimit.limit(
-          credentials.email as string
-        );
-        if (!success) return null;
+        try {
+          const { success } = await loginRatelimit.limit(
+            credentials.email as string
+          );
+          if (!success) return null;
+        } catch {
+          // Si Redis no está disponible, permite el login (fail open)
+          console.warn("Rate limit check failed, allowing login");
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
