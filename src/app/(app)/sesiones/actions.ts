@@ -9,12 +9,16 @@ export async function createSession(formData: FormData) {
   if (!session?.user || session.user.role !== "MENTOR") redirect("/login");
 
   const mentorId = session.user.id;
+  const studentId = formData.get("studentId") as string;
 
-  const student = await prisma.student.findUnique({
-    where: { mentorId },
+  if (!studentId) throw new Error("Debes seleccionar un alumno.");
+
+  // Validate the student belongs to this mentor
+  const student = await prisma.student.findFirst({
+    where: { id: studentId, mentorId },
   });
 
-  if (!student) throw new Error("No tienes un estudiante asignado.");
+  if (!student) throw new Error("El alumno seleccionado no te pertenece.");
 
   const date = formData.get("date") as string;
   const formationTopic = formData.get("formationTopic") as string;
@@ -27,7 +31,7 @@ export async function createSession(formData: FormData) {
   const relationships = parseInt(formData.get("relationships") as string);
   const balance = parseInt(formData.get("balance") as string);
 
-  const newSession = await prisma.session.create({
+  await prisma.session.create({
     data: {
       studentId: student.id,
       mentorId,

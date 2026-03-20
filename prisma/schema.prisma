@@ -103,14 +103,3 @@ model GoalUpdate {
   @@map("goal_updates")
 }
 
-model ProgrammingTopic {
-  id                 String  @id @default(cuid())
-  title              String
-  weekNumber         Int     @unique
-  description        String
-  talkingPoints      String
-  activitySuggestion String
-  resourcesUrl       String?
-
-  @@map("programming_topics")
-}

@@ -15,7 +15,6 @@ async function main() {
   await prisma.sessionEvaluation.deleteMany();
   await prisma.session.deleteMany();
   await prisma.student.deleteMany();
-  await prisma.programmingTopic.deleteMany();
   await prisma.user.deleteMany();
 
   // Hash passwords
@@ -73,69 +72,7 @@ async function main() {
 
   console.log("✅ Students created");
 
-  // Programming Topics
-  const topics = [
-    {
-      weekNumber: 1,
-      title: "Construyendo Buenos Hábitos",
-      description: "Explorar qué son los hábitos y cómo se forman. Reflexionar sobre los hábitos actuales del estudiante y su impacto en la vida diaria.",
-      talkingPoints: "- ¿Qué hábitos tienes actualmente?\n- ¿Cuáles te ayudan y cuáles te perjudican?\n- ¿Cómo se forma un hábito según la ciencia?\n- El ciclo: señal → rutina → recompensa",
-      activitySuggestion: "Hacer una lista de 3 hábitos que el estudiante quiere cultivar y diseñar un plan semanal simple para cada uno.",
-    },
-    {
-      weekNumber: 2,
-      title: "Responsabilidad y Compromisos",
-      description: "Entender qué significa ser responsable en el hogar, la escuela y las relaciones personales.",
-      talkingPoints: "- ¿Qué es ser responsable para ti?\n- Ejemplos de responsabilidad en casa y la escuela\n- Diferencia entre excusas y razones\n- Cómo cumplir compromisos difíciles",
-      activitySuggestion: "Escribir 3 compromisos personales para la semana y revisar en la próxima sesión cuántos se cumplieron.",
-    },
-    {
-      weekNumber: 3,
-      title: "Manejo del Tiempo de Pantalla",
-      description: "Reflexionar sobre el uso de dispositivos y redes sociales y su efecto en el bienestar y rendimiento.",
-      talkingPoints: "- ¿Cuántas horas al día usas tu teléfono?\n- ¿Qué aplicaciones usas más?\n- ¿Cómo afecta el tiempo de pantalla tu descanso y estudio?\n- Estrategias para usar la tecnología de forma intencional",
-      activitySuggestion: "Revisar el tiempo de uso en el teléfono durante una semana y proponer un límite realista para aplicaciones no educativas.",
-    },
-    {
-      weekNumber: 4,
-      title: "Amistad y Respeto",
-      description: "Explorar cómo construir y mantener amistades saludables basadas en el respeto mutuo.",
-      talkingPoints: "- ¿Qué hace a una buena amistad?\n- ¿Cómo manejas los conflictos con amigos?\n- Diferencia entre presión de grupo y decisiones propias\n- El respeto como base de las relaciones",
-      activitySuggestion: "Identificar a 2 personas en su vida con quienes quiera fortalecer su relación y pensar en una acción concreta para lograrlo.",
-    },
-    {
-      weekNumber: 5,
-      title: "Equilibrio Personal",
-      description: "Reconocer la importancia del bienestar físico, emocional y social para un desarrollo integral.",
-      talkingPoints: "- ¿Cómo te sientes en general estas semanas?\n- ¿Descansas bien? ¿Haces ejercicio?\n- ¿Tienes tiempo para actividades que disfrutes?\n- Señales de estrés y cómo manejarlo",
-      activitySuggestion: "Crear una 'rueda del bienestar' con 6 áreas (estudio, descanso, deporte, familia, amigos, hobbies) y calificar del 1-10 cada área.",
-    },
-    {
-      weekNumber: 6,
-      title: "Metas y Sueños",
-      description: "Ayudar al estudiante a clarificar sus sueños y transformarlos en metas concretas y alcanzables.",
-      talkingPoints: "- ¿Qué quieres hacer cuando termines la escuela?\n- Diferencia entre sueño y meta\n- Metas SMART (específicas, medibles, alcanzables, relevantes, temporales)\n- ¿Qué obstáculos ves?",
-      activitySuggestion: "Escribir 1 meta grande a 1 año y desglosarla en 3 pasos pequeños que pueda empezar esta semana.",
-    },
-    {
-      weekNumber: 7,
-      title: "Comunicación Efectiva",
-      description: "Desarrollar habilidades para comunicarse con claridad, empatía y asertividad en diferentes contextos.",
-      talkingPoints: "- ¿Cómo te comunicas con tus padres? ¿Con tus amigos?\n- ¿Qué es la comunicación asertiva?\n- Escucha activa: cómo practicarla\n- Cómo pedir y recibir ayuda",
-      activitySuggestion: "Juego de rol: practicar cómo pedir algo difícil (un permiso, expresar un desacuerdo) de forma respetuosa.",
-    },
-    {
-      weekNumber: 8,
-      title: "Gratitud y Positividad",
-      description: "Cultivar una actitud de gratitud y aprender a ver lo positivo incluso en situaciones difíciles.",
-      talkingPoints: "- ¿Qué es la gratitud y por qué importa?\n- ¿Por qué cosas estás agradecido esta semana?\n- Cómo la negatividad afecta nuestro desempeño\n- El diario de gratitud como práctica",
-      activitySuggestion: "Escribir 3 cosas por las que estar agradecido cada día durante una semana. Compartir al inicio de la siguiente sesión.",
-    },
-  ];
-
-  await prisma.programmingTopic.createMany({ data: topics });
-
-  console.log("✅ Programming topics created");
+  // Programming topics are now hardcoded in src/lib/programming-topics.ts
 
   // Sessions for student1
   const sessionDates = [

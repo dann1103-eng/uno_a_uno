@@ -13,6 +13,7 @@ import {
   GraduationCap,
   LogOut,
   ShieldCheck,
+  HandHelping,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,7 +49,8 @@ const supervisorNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Mentores", url: "/mentores", icon: Users },
   { title: "Estudiantes", url: "/estudiantes", icon: GraduationCap },
-  { title: "Usuarios", url: "/admin", icon: ShieldCheck },
+  { title: "Programación", url: "/programacion", icon: BookOpen },
+  { title: "Administración", url: "/admin", icon: ShieldCheck },
 ];
 
 export function AppSidebar({ user }: { user: User }) {
@@ -65,11 +67,16 @@ export function AppSidebar({ user }: { user: User }) {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-            M
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-amber text-brand-blue-deep">
+            <HandHelping className="h-5 w-5" strokeWidth={2.5} />
           </div>
-          <span className="font-semibold text-sm">Mentores 1a1</span>
+          <div>
+            <span className="font-bold text-sm tracking-tight">Mentores</span>
+            <span className="block text-[10px] font-medium opacity-70 uppercase tracking-widest">
+              Uno a Uno
+            </span>
+          </div>
         </div>
       </SidebarHeader>
 
@@ -97,18 +104,20 @@ export function AppSidebar({ user }: { user: User }) {
       <SidebarFooter className="p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            <AvatarFallback className="bg-brand-amber/20 text-xs font-semibold">
+              {initials}
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user.name}</p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs opacity-60 truncate">
               {isSupervisor ? "Supervisor" : "Mentor"}
             </p>
           </div>
           <Button
             variant="ghost"
             size="icon-sm"
-            className="shrink-0"
+            className="shrink-0 opacity-60 hover:opacity-100"
             onClick={() => signOut({ callbackUrl: "/login" })}
           >
             <LogOut className="h-4 w-4" />

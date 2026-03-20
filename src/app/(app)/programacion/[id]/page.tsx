@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-utils";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/lib/button-variants";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Lightbulb, Gamepad2, ExternalLink } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PROGRAMMING_TOPICS } from "@/lib/programming-topics";
 
 export default async function TopicDetailPage({
   params,
@@ -16,9 +16,8 @@ export default async function TopicDetailPage({
   await getCurrentUser();
   const { id } = await params;
 
-  const topic = await prisma.programmingTopic.findUnique({
-    where: { id },
-  });
+  const topicNumber = parseInt(id);
+  const topic = PROGRAMMING_TOPICS.find((t) => t.number === topicNumber);
 
   if (!topic) notFound();
 
@@ -35,7 +34,7 @@ export default async function TopicDetailPage({
       </div>
 
       <div className="space-y-1">
-        <Badge variant="outline">Semana {topic.weekNumber}</Badge>
+        <Badge variant="outline">Tema {topic.number}</Badge>
         <h1 className="text-2xl font-bold">{topic.title}</h1>
       </div>
 
@@ -43,61 +42,13 @@ export default async function TopicDetailPage({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <BookOpen className="h-4 w-4" />
-            Descripción
+            Tema de Formación
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed whitespace-pre-line">{topic.description}</p>
+          <p className="text-sm leading-relaxed">{topic.title}</p>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Lightbulb className="h-4 w-4" />
-            Puntos de Conversación
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-relaxed whitespace-pre-line">{topic.talkingPoints}</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Gamepad2 className="h-4 w-4" />
-            Actividad Sugerida
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-relaxed whitespace-pre-line">
-            {topic.activitySuggestion}
-          </p>
-        </CardContent>
-      </Card>
-
-      {topic.resourcesUrl && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ExternalLink className="h-4 w-4" />
-              Recursos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <a
-              href={topic.resourcesUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline flex items-center gap-1"
-            >
-              {topic.resourcesUrl}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
