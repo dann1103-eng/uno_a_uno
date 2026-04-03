@@ -6,7 +6,7 @@ import { buttonVariants } from "@/lib/button-variants";
 import Link from "next/link";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PROGRAMMING_TOPICS } from "@/lib/programming-topics";
+import { TOPIC_ITEMS } from "@/lib/programming-topics";
 
 export default async function TopicDetailPage({
   params,
@@ -17,7 +17,7 @@ export default async function TopicDetailPage({
   const { id } = await params;
 
   const topicNumber = parseInt(id);
-  const topic = PROGRAMMING_TOPICS.find((t) => t.number === topicNumber);
+  const topic = TOPIC_ITEMS.find((t) => t.number === topicNumber);
 
   if (!topic) notFound();
 

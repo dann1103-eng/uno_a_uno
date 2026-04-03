@@ -60,6 +60,7 @@ model Session {
   mentor         User               @relation(fields: [mentorId], references: [id])
   evaluation     SessionEvaluation?
 
+  @@unique([studentId, formationTopic], name: "unique_student_topic")
   @@map("sessions")
 }
 
@@ -70,7 +71,8 @@ model SessionEvaluation {
   responsibility Int
   study          Int
   relationships  Int
-  balance        Int
+  family         Int
+  piety          Int
 
   session        Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 

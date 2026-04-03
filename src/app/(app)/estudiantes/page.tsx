@@ -4,9 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Link from "next/link";
 
-function avgMetric(evals: { discipline: number; responsibility: number; study: number; relationships: number; balance: number }[]) {
+function avgMetric(evals: { discipline: number; responsibility: number; study: number; relationships: number; family: number; piety: number }[]) {
   if (!evals.length) return null;
-  const sum = evals.reduce((acc, e) => acc + (e.discipline + e.responsibility + e.study + e.relationships + e.balance) / 5, 0);
+  const sum = evals.reduce((acc, e) => acc + (e.discipline + e.responsibility + e.study + e.relationships + e.family + e.piety) / 6, 0);
   return (sum / evals.length).toFixed(1);
 }
 
@@ -48,7 +48,7 @@ export default async function EstudiantesPage() {
               {students.map((student) => {
                 const evals = student.sessions
                   .map((s) => s.evaluation)
-                  .filter(Boolean) as { discipline: number; responsibility: number; study: number; relationships: number; balance: number }[];
+                  .filter(Boolean) as { discipline: number; responsibility: number; study: number; relationships: number; family: number; piety: number }[];
                 const avg = avgMetric(evals);
                 return (
                   <TableRow key={student.id}>

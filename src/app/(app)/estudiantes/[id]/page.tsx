@@ -51,7 +51,8 @@ export default async function StudentProfilePage({
     responsibility: calcAvg(last5.map((e) => e!.responsibility)),
     study: calcAvg(last5.map((e) => e!.study)),
     relationships: calcAvg(last5.map((e) => e!.relationships)),
-    balance: calcAvg(last5.map((e) => e!.balance)),
+    family: calcAvg(last5.map((e) => e!.family)),
+    piety: calcAvg(last5.map((e) => e!.piety)),
   };
 
   const hasMetrics = last5.length > 0;
@@ -168,7 +169,8 @@ export default async function StudentProfilePage({
                         ["Responsabilidad", session.evaluation.responsibility],
                         ["Estudio", session.evaluation.study],
                         ["Relaciones", session.evaluation.relationships],
-                        ["Equilibrio", session.evaluation.balance],
+                        ["Familia", session.evaluation.family],
+                        ["Piedad", session.evaluation.piety],
                       ] as [string, number][]
                     ).map(([label, value]) => (
                       <Badge key={label} variant="secondary" className="text-xs">
@@ -252,14 +254,15 @@ export default async function StudentProfilePage({
               ) : (
                 <div className="space-y-4">
                   <MetricsRadarChart metrics={metrics} />
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     {(
                       [
                         ["Disciplina", metrics.discipline],
                         ["Responsabilidad", metrics.responsibility],
                         ["Estudio", metrics.study],
                         ["Relaciones", metrics.relationships],
-                        ["Equilibrio", metrics.balance],
+                        ["Familia", metrics.family],
+                        ["Piedad", metrics.piety],
                       ] as [string, number][]
                     ).map(([label, value]) => (
                       <div key={label} className="text-center p-3 rounded-lg bg-muted">

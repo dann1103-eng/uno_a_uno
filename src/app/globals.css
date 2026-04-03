@@ -42,6 +42,17 @@
   --color-brand-blue-deep: #022448;
   --color-brand-amber: #d4a843;
   --color-brand-amber-light: #eec058;
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container-md: var(--surface-container-md);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline-variant: var(--outline-variant);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -76,6 +87,17 @@
   --chart-4: #d4a843;
   --chart-5: #eec058;
   --radius: 0.5rem;
+  --primary-container: #1e3a5f;
+  --on-primary-container: #8aa4cf;
+  --tertiary-fixed: #ffdf9f;
+  --tertiary-fixed-dim: #eec058;
+  --on-tertiary-container: #c89d39;
+  --on-tertiary-fixed-variant: #5b4300;
+  --surface-container-low: #f4f3f7;
+  --surface-container-md: #eeedf1;
+  --surface-container-high: #e9e7eb;
+  --on-surface-variant: #43474e;
+  --outline-variant: #c4c6cf;
   --sidebar: #022448;
   --sidebar-foreground: #d5e3ff;
   --sidebar-primary: #eec058;
@@ -130,4 +152,13 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Custom slider styles for gold thumb */
+[data-slot="slider-thumb"] {
+  background-color: #d4a843 !important;
+  border-color: #d4a843 !important;
+}
+[data-slot="slider-track"] [data-slot="slider-range"] {
+  background-color: #d4a843 !important;
 }

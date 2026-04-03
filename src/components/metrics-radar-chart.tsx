@@ -15,7 +15,8 @@ type MetricsData = {
   responsibility: number;
   study: number;
   relationships: number;
-  balance: number;
+  family: number;
+  piety: number;
 };
 
 export function MetricsRadarChart({ metrics }: { metrics: MetricsData }) {
@@ -24,7 +25,8 @@ export function MetricsRadarChart({ metrics }: { metrics: MetricsData }) {
     { subject: "Responsabilidad", value: metrics.responsibility },
     { subject: "Estudio", value: metrics.study },
     { subject: "Relaciones", value: metrics.relationships },
-    { subject: "Equilibrio", value: metrics.balance },
+    { subject: "Familia", value: metrics.family },
+    { subject: "Piedad", value: metrics.piety },
   ];
 
   return (
