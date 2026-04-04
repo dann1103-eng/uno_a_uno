@@ -31,7 +31,10 @@ export default async function StudentProfilePage({
       mentor: true,
       sessions: {
         orderBy: { date: "desc" },
-        include: { evaluation: true },
+        include: {
+          evaluation: true,
+          mentor: { select: { id: true, name: true, role: true } },
+        },
       },
       goals: {
         orderBy: { startDate: "desc" },
@@ -76,7 +79,7 @@ export default async function StudentProfilePage({
             {student.age} años · {student.grade}
           </p>
         </div>
-        {user.role === "MENTOR" && (
+        {(user.role === "MENTOR" || user.role === "SUBSTITUTE" || user.role === "SUPERVISOR") && (
           <Link
             href="/sesiones/nueva"
             className={cn(buttonVariants({ size: "sm" }))}
@@ -113,7 +116,7 @@ export default async function StudentProfilePage({
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Mentor</p>
-                  <p className="font-medium">{student.mentor.name}</p>
+                  <p className="font-medium">{student.mentor?.name ?? "Sin mentor asignado"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Sesiones totales</p>
@@ -136,9 +139,19 @@ export default async function StudentProfilePage({
             <Card key={session.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium">
-                    {session.formationTopic}
-                  </CardTitle>
+                  <div>
+                    <CardTitle className="text-sm font-medium">
+                      {session.formationTopic}
+                    </CardTitle>
+                    {session.mentor && session.mentor.id !== student.mentorId && (
+                      <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+                        Por: {session.mentor.name} ({session.mentor.role === "SUBSTITUTE" ? "Suplente" : "Supervisor"})
+                      </p>
+                    )}
+                    {!session.mentor && (
+                      <p className="text-xs text-muted-foreground mt-0.5">Por: Mentor eliminado</p>
+                    )}
+                  </div>
                   <span className="text-xs text-muted-foreground">
                     {new Date(session.date).toLocaleDateString("es-ES", {
                       day: "numeric",

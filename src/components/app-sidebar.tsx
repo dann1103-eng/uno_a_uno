@@ -14,6 +14,7 @@ import {
   LogOut,
   ShieldCheck,
   HandHelping,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,6 +44,7 @@ const mentorNav = [
   { title: "Mi Estudiante", url: "/mi-estudiante", icon: User },
   { title: "Nueva Sesión", url: "/sesiones/nueva", icon: PlusCircle },
   { title: "Metas", url: "/metas", icon: Target },
+  { title: "Configuración", url: "/configuracion", icon: Settings },
 ];
 
 const supervisorNav = [
@@ -50,13 +52,24 @@ const supervisorNav = [
   { title: "Mentores", url: "/mentores", icon: Users },
   { title: "Estudiantes", url: "/estudiantes", icon: GraduationCap },
   { title: "Programación", url: "/programacion", icon: BookOpen },
+  { title: "Nueva Sesión", url: "/sesiones/nueva", icon: PlusCircle },
   { title: "Administración", url: "/admin", icon: ShieldCheck },
+  { title: "Configuración", url: "/configuracion", icon: Settings },
+];
+
+const substituteNav = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Nueva Sesión", url: "/sesiones/nueva", icon: PlusCircle },
+  { title: "Programación", url: "/programacion", icon: BookOpen },
+  { title: "Configuración", url: "/configuracion", icon: Settings },
 ];
 
 export function AppSidebar({ user }: { user: User }) {
   const pathname = usePathname();
-  const isSupervisor = user.role === "SUPERVISOR";
-  const navItems = isSupervisor ? supervisorNav : mentorNav;
+  const navItems =
+    user.role === "SUPERVISOR" ? supervisorNav :
+    user.role === "SUBSTITUTE" ? substituteNav :
+    mentorNav;
   const initials = user.name
     ?.split(" ")
     .map((n) => n[0])
@@ -111,7 +124,7 @@ export function AppSidebar({ user }: { user: User }) {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user.name}</p>
             <p className="text-xs opacity-60 truncate">
-              {isSupervisor ? "Supervisor" : "Mentor"}
+              {user.role === "SUPERVISOR" ? "Supervisor" : user.role === "SUBSTITUTE" ? "Suplente" : "Mentor"}
             </p>
           </div>
           <Button

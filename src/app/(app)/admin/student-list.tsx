@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { reassignStudent } from "./actions";
+import { reassignStudent, unassignStudent } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +13,7 @@ type Student = {
   name: string;
   age: number;
   grade: string;
-  mentor: { id: string; name: string };
+  mentor: { id: string; name: string } | null;
 };
 
 type Mentor = { id: string; name: string; hasStudent: boolean };
@@ -43,6 +43,24 @@ export function StudentList({ students, mentors }: { students: Student[]; mentor
       setNewMentorId("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error al reasignar.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleUnassign(studentId: string) {
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.set("studentId", studentId);
+
+    try {
+      await unassignStudent(formData);
+      setSuccess("Alumno desasignado correctamente.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al desasignar.");
     } finally {
       setLoading(false);
     }
@@ -106,16 +124,33 @@ export function StudentList({ students, mentors }: { students: Student[]; mentor
                   </Button>
                 </div>
               ) : (
-                <>
-                  <Badge variant="secondary">{student.mentor.name}</Badge>
+                <div className="flex items-center gap-2">
+                  {student.mentor ? (
+                    <Badge variant="secondary">{student.mentor.name}</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-orange-600 border-orange-300">
+                      Sin mentor
+                    </Badge>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setReassigning(student.id)}
                   >
-                    Reasignar
+                    {student.mentor ? "Reasignar" : "Asignar"}
                   </Button>
-                </>
+                  {student.mentor && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-destructive"
+                      disabled={loading}
+                      onClick={() => handleUnassign(student.id)}
+                    >
+                      Desasignar
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </div>

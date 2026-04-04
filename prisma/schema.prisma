@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   MENTOR
   SUPERVISOR
+  SUBSTITUTE
 }
 
 enum GoalStatus {
@@ -36,10 +37,10 @@ model Student {
   name      String
   age       Int
   grade     String
-  mentorId  String    @unique
+  mentorId  String?   @unique
   createdAt DateTime  @default(now())
 
-  mentor    User      @relation(fields: [mentorId], references: [id])
+  mentor    User?     @relation(fields: [mentorId], references: [id])
   sessions  Session[]
   goals     Goal[]
 
@@ -49,7 +50,7 @@ model Student {
 model Session {
   id             String    @id @default(cuid())
   studentId      String
-  mentorId       String
+  mentorId       String?
   date           DateTime
   formationTopic String
   notes          String    @default("")
@@ -57,7 +58,7 @@ model Session {
   createdAt      DateTime  @default(now())
 
   student        Student            @relation(fields: [studentId], references: [id])
-  mentor         User               @relation(fields: [mentorId], references: [id])
+  mentor         User?              @relation(fields: [mentorId], references: [id], onDelete: SetNull)
   evaluation     SessionEvaluation?
 
   @@unique([studentId, formationTopic], name: "unique_student_topic")

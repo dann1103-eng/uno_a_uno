@@ -26,11 +26,11 @@ export function CreateStudentForm({ mentors }: { mentors: Mentor[] }) {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    formData.set("mentorId", mentorId);
+    formData.set("mentorId", mentorId === "none" ? "" : mentorId);
 
     try {
       await createStudent(formData);
-      setSuccess("Alumno creado y asignado correctamente.");
+      setSuccess("Alumno creado correctamente.");
       (e.target as HTMLFormElement).reset();
       setMentorId("");
     } catch (err: unknown) {
@@ -65,11 +65,12 @@ export function CreateStudentForm({ mentors }: { mentors: Mentor[] }) {
             </div>
             <div className="space-y-2">
               <Label>Mentor asignado</Label>
-              <Select value={mentorId} onValueChange={(v) => { if (v) setMentorId(v); }}>
+              <Select value={mentorId} onValueChange={(v) => setMentorId(v ?? "")}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un mentor" />
+                  <SelectValue placeholder="Sin asignar (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Sin asignar</SelectItem>
                   {availableMentors.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       {m.name}
@@ -77,18 +78,13 @@ export function CreateStudentForm({ mentors }: { mentors: Mentor[] }) {
                   ))}
                 </SelectContent>
               </Select>
-              {availableMentors.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Todos los mentores ya tienen un alumno asignado.
-                </p>
-              )}
             </div>
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
           {success && <p className="text-sm text-green-600">{success}</p>}
 
-          <Button type="submit" disabled={loading || !mentorId}>
+          <Button type="submit" disabled={loading}>
             {loading ? "Creando..." : "Crear alumno"}
           </Button>
         </form>

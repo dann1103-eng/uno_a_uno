@@ -4,8 +4,7 @@ import { notFound } from "next/navigation";
 import { CreateUserForm } from "./create-user-form";
 import { CreateStudentForm } from "./create-student-form";
 import { StudentList } from "./student-list";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { UserList } from "./user-list";
 import { ShieldCheck } from "lucide-react";
 
 export default async function AdminPage() {
@@ -61,33 +60,15 @@ export default async function AdminPage() {
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-[#022448]">Usuarios</h2>
         <CreateUserForm />
-        <Card className="border-none shadow-[0_12px_32px_rgba(2,36,72,0.06)]">
-          <CardHeader>
-            <CardTitle className="text-base text-[#1e3a5f]">Usuarios registrados</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between py-3 rounded-lg hover:bg-[#d5e3ff]/10 px-2 transition-colors"
-              >
-                <div>
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-                <Badge
-                  className={
-                    user.role === "SUPERVISOR"
-                      ? "bg-[#1e3a5f] text-white hover:bg-[#022448]"
-                      : "bg-[#d4a843]/15 text-[#5b4300] hover:bg-[#d4a843]/25"
-                  }
-                >
-                  {user.role === "SUPERVISOR" ? "Supervisor" : "Mentor"}
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <UserList
+          users={users.map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+          }))}
+          currentUserId={currentUser.id!}
+        />
       </section>
 
       {/* Section: Students */}

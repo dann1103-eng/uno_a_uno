@@ -14,7 +14,7 @@ export async function createUser(formData: FormData) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const role = formData.get("role") as "MENTOR" | "SUPERVISOR";
+  const role = formData.get("role") as "MENTOR" | "SUPERVISOR" | "SUBSTITUTE";
 
   if (!name || !email || !password || !role) {
     throw new Error("Todos los campos son obligatorios");
@@ -47,24 +47,25 @@ export async function createStudent(formData: FormData) {
   const name = formData.get("name") as string;
   const age = parseInt(formData.get("age") as string);
   const grade = formData.get("grade") as string;
-  const mentorId = formData.get("mentorId") as string;
+  const mentorId = (formData.get("mentorId") as string) || null;
 
-  if (!name || !age || !grade || !mentorId) {
-    throw new Error("Todos los campos son obligatorios");
+  if (!name || !age || !grade) {
+    throw new Error("Nombre, edad y grado son obligatorios");
   }
 
-  // Check mentor exists and doesn't already have a student (1:1 constraint)
-  const mentor = await prisma.user.findUnique({
-    where: { id: mentorId, role: "MENTOR" },
-    include: { student: true },
-  });
+  if (mentorId) {
+    const mentor = await prisma.user.findUnique({
+      where: { id: mentorId, role: "MENTOR" },
+      include: { student: true },
+    });
 
-  if (!mentor) {
-    throw new Error("El mentor seleccionado no existe");
-  }
+    if (!mentor) {
+      throw new Error("El mentor seleccionado no existe");
+    }
 
-  if (mentor.student) {
-    throw new Error("Este mentor ya tiene un alumno asignado");
+    if (mentor.student) {
+      throw new Error("Este mentor ya tiene un alumno asignado");
+    }
   }
 
   await prisma.student.create({
@@ -105,6 +106,57 @@ export async function reassignStudent(formData: FormData) {
     where: { id: studentId },
     data: { mentorId: newMentorId },
   });
+
+  revalidatePath("/admin");
+}
+
+export async function unassignStudent(formData: FormData) {
+  const currentUser = await getCurrentUser();
+  if (currentUser.role !== "SUPERVISOR") {
+    throw new Error("No autorizado");
+  }
+
+  const studentId = formData.get("studentId") as string;
+  if (!studentId) throw new Error("ID de alumno requerido");
+
+  await prisma.student.update({
+    where: { id: studentId },
+    data: { mentorId: null },
+  });
+
+  revalidatePath("/admin");
+}
+
+export async function deleteUser(formData: FormData) {
+  const currentUser = await getCurrentUser();
+  if (currentUser.role !== "SUPERVISOR") {
+    throw new Error("No autorizado");
+  }
+
+  const userId = formData.get("userId") as string;
+  if (!userId) throw new Error("ID de usuario requerido");
+
+  if (userId === currentUser.id) {
+    throw new Error("No puedes eliminarte a ti mismo");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { student: true },
+  });
+
+  if (!user) throw new Error("Usuario no encontrado");
+
+  // Unassign their student first (if any)
+  if (user.student) {
+    await prisma.student.update({
+      where: { id: user.student.id },
+      data: { mentorId: null },
+    });
+  }
+
+  // Sessions will have mentorId set to null via onDelete: SetNull
+  await prisma.user.delete({ where: { id: userId } });
 
   revalidatePath("/admin");
 }

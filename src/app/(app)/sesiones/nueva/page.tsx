@@ -8,14 +8,23 @@ import Link from "next/link";
 export default async function NuevaSesionPage() {
   const user = await getCurrentUser();
 
-  if (user.role !== "MENTOR") redirect("/dashboard");
+  let students: { id: string; name: string }[];
 
-  const students = await prisma.student.findMany({
-    where: { mentorId: user.id },
-    select: { id: true, name: true },
-  });
-
-  if (students.length === 0) redirect("/dashboard");
+  if (user.role === "MENTOR") {
+    students = await prisma.student.findMany({
+      where: { mentorId: user.id },
+      select: { id: true, name: true },
+    });
+    if (students.length === 0) redirect("/dashboard");
+  } else if (user.role === "SUPERVISOR" || user.role === "SUBSTITUTE") {
+    students = await prisma.student.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    });
+    if (students.length === 0) redirect("/dashboard");
+  } else {
+    redirect("/dashboard");
+  }
 
   const topics = TOPIC_ITEMS.map((t) => ({
     id: String(t.number),

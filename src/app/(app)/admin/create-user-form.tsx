@@ -67,6 +67,7 @@ export function CreateUserForm() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="MENTOR">Mentor</SelectItem>
+                  <SelectItem value="SUBSTITUTE">Suplente</SelectItem>
                   <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
                 </SelectContent>
               </Select>

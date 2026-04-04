@@ -29,7 +29,11 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
 
   if (user.role === "SUPERVISOR") {
-    return <SupervisorDashboard />;
+    return <SupervisorDashboard userId={user.id} />;
+  }
+
+  if (user.role === "SUBSTITUTE") {
+    return <SubstituteDashboard userId={user.id} userName={user.name ?? "Suplente"} />;
   }
 
   return <MentorDashboard userId={user.id} userName={user.name ?? "Mentor"} />;
@@ -42,7 +46,10 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
       sessions: {
         orderBy: { date: "desc" },
         take: 1,
-        include: { evaluation: true },
+        include: {
+          evaluation: true,
+          mentor: { select: { id: true, name: true, role: true } },
+        },
       },
     },
   });
@@ -206,7 +213,14 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
                     <div className="w-2 h-8 bg-[#eec058] rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-[#022448]">Última Sesión</h2>
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#022448]">Última Sesión</h2>
+                      {lastSession.mentor && lastSession.mentorId !== userId && (
+                        <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+                          Dada por: {lastSession.mentor.name} ({lastSession.mentor.role === "SUBSTITUTE" ? "Suplente" : "Supervisor"})
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <span className="text-sm font-bold text-muted-foreground">
                     {new Date(lastSession.date).toLocaleDateString("es-ES", {
@@ -297,7 +311,7 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
   );
 }
 
-async function SupervisorDashboard() {
+async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
   const [mentors, students, recentSessions] = await Promise.all([
     prisma.user.findMany({
       where: { role: "MENTOR" },
@@ -309,13 +323,13 @@ async function SupervisorDashboard() {
     prisma.session.findMany({
       orderBy: { date: "desc" },
       take: 5,
-      include: { student: true, mentor: true },
+      include: { student: true, mentor: { select: { name: true, role: true } } },
     }),
   ]);
 
   const sessionCount = await prisma.session.count();
   const mentorsWithoutStudent = mentors.filter((m) => !m.student);
-  const studentsWithoutMentor = 0; // All students must have a mentor per schema
+  const studentsWithoutMentor = students.filter((s) => !s.mentor).length;
 
   return (
     <div className="space-y-10 max-w-7xl mx-auto">
@@ -368,14 +382,14 @@ async function SupervisorDashboard() {
             <div className="text-5xl font-extrabold text-[#1e3a5f] tracking-tighter">
               {students.length}
             </div>
-            {mentorsWithoutStudent.length > 0 && (
+            {studentsWithoutMentor > 0 && (
               <div className="bg-[#fece65] text-[#755700] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                {mentorsWithoutStudent.length} mentores libres
+                {studentsWithoutMentor} sin mentor
               </div>
             )}
           </div>
           <p className="text-xs text-[#43474e] mt-2 font-medium">
-            {students.length - mentorsWithoutStudent.length} con mentor activo
+            {students.length - studentsWithoutMentor} con mentor activo
           </p>
         </div>
 
@@ -429,7 +443,16 @@ async function SupervisorDashboard() {
                       {session.student.name}
                     </td>
                     <td className="px-6 py-4 text-sm text-[#1a1c1e]">
-                      {session.mentor.name}
+                      {session.mentor ? (
+                        <span>
+                          {session.mentor.name}
+                          {session.mentor.role === "SUBSTITUTE" && (
+                            <span className="ml-1 text-[10px] text-emerald-700 font-bold">(Suplente)</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground italic">Eliminado</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span className="bg-[#d5e3ff] text-[#2d486d] px-3 py-1 rounded-md text-[11px] font-semibold">
@@ -519,6 +542,124 @@ async function SupervisorDashboard() {
             <div className="absolute -left-8 -top-8 w-24 h-24 bg-[#022448]/40 rounded-full blur-xl"></div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+async function SubstituteDashboard({ userId, userName }: { userId: string; userName: string }) {
+  const recentSessions = await prisma.session.findMany({
+    where: { mentorId: userId },
+    orderBy: { date: "desc" },
+    take: 10,
+    include: {
+      student: { select: { id: true, name: true, grade: true } },
+      evaluation: true,
+    },
+  });
+
+  const uniqueStudents = new Set(recentSessions.map((s) => s.studentId)).size;
+
+  return (
+    <div className="space-y-8 max-w-6xl mx-auto">
+      {/* Welcome Hero */}
+      <header className="relative overflow-hidden rounded-2xl bg-[#1e3a5f] p-10 md:p-12 text-white">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
+              <HandHelping className="h-4 w-4 text-[#eec058]" />
+              <span className="text-xs font-bold tracking-widest uppercase">PANEL DEL SUPLENTE</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              Bienvenido, {userName.split(" ")[0]}
+            </h1>
+            <p className="text-blue-100/80 max-w-xl text-base leading-relaxed">
+              Como suplente puedes registrar sesiones para cualquier alumno del programa.
+            </p>
+          </div>
+        </div>
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#022448]/50 to-transparent pointer-events-none"></div>
+      </header>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="bg-white p-8 rounded-xl shadow-[0_20px_40px_rgba(30,58,95,0.04)] border-t-4 border-[#1e3a5f]">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">
+              Sesiones Dadas
+            </span>
+            <Calendar className="h-6 w-6 text-[#1e3a5f]" />
+          </div>
+          <div className="text-5xl font-extrabold text-[#1e3a5f] tracking-tighter">
+            {recentSessions.length}
+          </div>
+        </div>
+        <div className="bg-white p-8 rounded-xl shadow-[0_20px_40px_rgba(30,58,95,0.04)] border-t-4 border-[#795900]">
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">
+              Alumnos Atendidos
+            </span>
+            <GraduationCap className="h-6 w-6 text-[#795900]" />
+          </div>
+          <div className="text-5xl font-extrabold text-[#1e3a5f] tracking-tighter">
+            {uniqueStudents}
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Action */}
+      <Link
+        href="/sesiones/nueva"
+        className="flex items-center gap-3 bg-gradient-to-br from-[#d4a843] to-[#eec058] text-[#001c3b] px-8 py-5 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full md:w-auto md:self-start"
+      >
+        <PlusCircle className="h-5 w-5" />
+        Registrar nueva sesión
+      </Link>
+
+      {/* Recent Sessions */}
+      <div className="bg-white rounded-xl shadow-[0_20px_40px_rgba(30,58,95,0.04)] overflow-hidden">
+        <div className="p-6 border-b border-[#c4c6cf]/15 bg-[#f4f3f7]/50 flex justify-between items-center">
+          <h3 className="text-xl font-bold text-[#022448]">Mis Sesiones Registradas</h3>
+          <Clock className="h-5 w-5 text-muted-foreground" />
+        </div>
+        {recentSessions.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground">
+            <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-30" />
+            <p>Aún no has registrado ninguna sesión.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-[#f4f3f7]">
+                <tr>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Fecha</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Alumno</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Tema</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#c4c6cf]/10">
+                {recentSessions.map((session) => (
+                  <tr key={session.id} className="hover:bg-[#d5e3ff]/20 transition-colors">
+                    <td className="px-6 py-4 text-sm text-[#43474e]">
+                      {new Date(session.date).toLocaleDateString("es-ES")}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link href={`/estudiantes/${session.student.id}`} className="font-bold text-[#1e3a5f] text-sm hover:underline">
+                        {session.student.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">{session.student.grade}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="bg-[#d5e3ff] text-[#2d486d] px-3 py-1 rounded-md text-[11px] font-semibold">
+                        {session.formationTopic}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

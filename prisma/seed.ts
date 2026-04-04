@@ -33,7 +33,7 @@ async function main() {
   await prisma.user.deleteMany();
 
   // Create supervisor
-  const supervisor = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: "Roberto López",
       email: "roberto@mentores.com",
@@ -42,6 +42,25 @@ async function main() {
     },
   });
   console.log("✅ Supervisor created");
+
+  // Create substitute mentors
+  await prisma.user.create({
+    data: {
+      name: "Carlos Ramírez",
+      email: "carlos.ramirez@mentores.com",
+      passwordHash: await hash("suplente123"),
+      role: "SUBSTITUTE",
+    },
+  });
+  await prisma.user.create({
+    data: {
+      name: "Ana Martínez",
+      email: "ana.martinez@mentores.com",
+      passwordHash: await hash("suplente123"),
+      role: "SUBSTITUTE",
+    },
+  });
+  console.log("✅ Substitute mentors created");
 
   // Create mentors and students
   for (const pair of mentorStudentPairs) {

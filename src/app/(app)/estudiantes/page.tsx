@@ -61,7 +61,7 @@ export default async function EstudiantesPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{student.grade}</TableCell>
-                    <TableCell>{student.mentor.name}</TableCell>
+                    <TableCell>{student.mentor?.name ?? <span className="text-orange-500 text-xs font-semibold">Sin mentor</span>}</TableCell>
                     <TableCell>{student.sessions.length}</TableCell>
                     <TableCell>{avg ? `${avg}/5` : "—"}</TableCell>
                   </TableRow>
