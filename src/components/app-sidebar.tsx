@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   HandHelping,
   Settings,
+  BarChart2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -51,6 +52,7 @@ const supervisorNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Mentores", url: "/mentores", icon: Users },
   { title: "Estudiantes", url: "/estudiantes", icon: GraduationCap },
+  { title: "Estadísticas", url: "/estadisticas", icon: BarChart2 },
   { title: "Programación", url: "/programacion", icon: BookOpen },
   { title: "Nueva Sesión", url: "/sesiones/nueva", icon: PlusCircle },
   { title: "Administración", url: "/admin", icon: ShieldCheck },

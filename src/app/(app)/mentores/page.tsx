@@ -38,7 +38,11 @@ export default async function MentoresPage() {
             <TableBody>
               {mentors.map((mentor) => (
                 <TableRow key={mentor.id}>
-                  <TableCell className="font-medium">{mentor.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/mentores/${mentor.id}`} className="text-primary hover:underline">
+                      {mentor.name}
+                    </Link>
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{mentor.email}</TableCell>
                   <TableCell>
                     {mentor.student ? (

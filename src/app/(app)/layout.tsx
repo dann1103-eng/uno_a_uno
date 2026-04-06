@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { IdleTimeoutProvider } from "@/components/idle-timeout-provider";
 
 export default async function AppLayout({
   children,
@@ -13,6 +14,8 @@ export default async function AppLayout({
   if (!session?.user) redirect("/login");
 
   return (
+    <>
+    <IdleTimeoutProvider />
     <SidebarProvider>
       <AppSidebar user={session.user} />
       <SidebarInset>
@@ -25,5 +28,6 @@ export default async function AppLayout({
         </main>
       </SidebarInset>
     </SidebarProvider>
+    </>
   );
 }

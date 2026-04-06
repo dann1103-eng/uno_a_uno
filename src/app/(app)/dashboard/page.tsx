@@ -312,7 +312,7 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
 }
 
 async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
-  const [mentors, students, recentSessions] = await Promise.all([
+  const [mentors, students, recentSessions, mentorActivity] = await Promise.all([
     prisma.user.findMany({
       where: { role: "MENTOR" },
       include: { student: true },
@@ -324,6 +324,20 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
       orderBy: { date: "desc" },
       take: 5,
       include: { student: true, mentor: { select: { name: true, role: true } } },
+    }),
+    prisma.user.findMany({
+      where: { role: "MENTOR" },
+      select: {
+        id: true,
+        name: true,
+        sessions: {
+          orderBy: { date: "desc" },
+          take: 1,
+          select: { formationTopic: true, date: true },
+        },
+        _count: { select: { sessions: true } },
+      },
+      orderBy: { name: "asc" },
     }),
   ]);
 
@@ -523,6 +537,42 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
               </Link>
             </div>
           )}
+
+          {/* Tutor Activity Widget */}
+          <div className="bg-white p-6 rounded-xl shadow-[0_20px_40px_rgba(30,58,95,0.04)]">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#022448] tracking-tight">Actividad de Tutores</h3>
+              <Link href="/mentores" className="text-[10px] font-bold uppercase tracking-widest text-[#795900] hover:underline">
+                Ver todos
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {mentorActivity.map((m) => {
+                const lastSession = m.sessions[0];
+                const hours = m._count.sessions * 3;
+                return (
+                  <Link
+                    key={m.id}
+                    href={`/mentores/${m.id}`}
+                    className="flex items-center justify-between p-3 rounded-lg bg-[#f4f3f7] hover:bg-[#e9e7eb] transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-[#1e3a5f] truncate">{m.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {lastSession ? lastSession.formationTopic : "Sin sesiones"}
+                      </p>
+                    </div>
+                    <div className="shrink-0 ml-3 text-right">
+                      <span className="text-sm font-extrabold text-[#795900]">{hours}h</span>
+                    </div>
+                  </Link>
+                );
+              })}
+              {mentorActivity.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">Sin tutores registrados</p>
+              )}
+            </div>
+          </div>
 
           {/* Quick Insights Card */}
           <div className="bg-[#1e3a5f] text-white p-6 rounded-xl relative overflow-hidden">
