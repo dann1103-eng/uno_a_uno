@@ -22,7 +22,7 @@ export function SessionsBarChart({ data }: Props) {
         <XAxis dataKey="month" tick={{ fontSize: 12 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
         <Tooltip
-          formatter={(value: number) => [value, "Sesiones"]}
+          formatter={(value) => [value, "Sesiones"]}
           contentStyle={{ borderRadius: 8, fontSize: 12 }}
         />
         <Bar dataKey="sesiones" fill="#1e3a5f" radius={[4, 4, 0, 0]} />
