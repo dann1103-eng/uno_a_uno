@@ -20,7 +20,6 @@ export function IdleWarningModal({ isOpen, countdown, onContinue }: IdleWarningM
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent
         className="sm:max-w-sm"
-        onInteractOutside={(e) => e.preventDefault()}
         showCloseButton={false}
       >
         <DialogHeader>
