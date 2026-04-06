@@ -23,6 +23,8 @@ const HOURS_PER_SESSION = 3;
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: "Helvetica", fontSize: 10, color: "#1a1c1e" },
   header: { marginBottom: 20 },
+  org: { fontSize: 13, fontFamily: "Helvetica-Bold", color: "#795900", marginBottom: 2 },
+  program: { fontSize: 10, color: "#43474e", marginBottom: 10 },
   title: { fontSize: 18, fontFamily: "Helvetica-Bold", color: "#1e3a5f", marginBottom: 4 },
   subtitle: { fontSize: 11, color: "#43474e", marginBottom: 2 },
   generatedAt: { fontSize: 9, color: "#888", marginTop: 4 },
@@ -56,6 +58,8 @@ function MentorReportPDF({ mentorName, sessions }: Props) {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
+          <Text style={styles.org}>Fundación Actúa</Text>
+          <Text style={styles.program}>Programa social Uno a Uno - Cambiando a El Salvador</Text>
           <Text style={styles.title}>Reporte de Sesiones</Text>
           <Text style={styles.subtitle}>Tutor: {mentorName}</Text>
           <Text style={styles.generatedAt}>Generado el {generatedDate}</Text>
@@ -93,7 +97,7 @@ function MentorReportPDF({ mentorName, sessions }: Props) {
             </View>
             <View style={styles.signatureBlock}>
               <View style={styles.signatureLine}><Text> </Text></View>
-              <Text style={styles.signatureLabel}>Firma del Alumno</Text>
+              <Text style={styles.signatureLabel}>Firma del Tutor</Text>
             </View>
           </View>
         </View>
