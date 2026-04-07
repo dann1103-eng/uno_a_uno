@@ -1,12 +1,16 @@
 import { getCurrentUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, HandHelping, Check } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { PROGRAMMING_TOPICS } from "@/lib/programming-topics";
+import { TopicAccordionItem } from "@/components/topic-accordion-item";
 
 export default async function ProgramacionPage() {
   const user = await getCurrentUser();
+
+  // Fetch topic content from DB
+  const allContent = await prisma.topicContent.findMany();
+  const contentMap = new Map(allContent.map((tc) => [tc.topicNumber, tc]));
 
   // For mentors, fetch their student's completed sessions
   let completedTopics = new Map<string, { notes: string; date: Date }>();
@@ -43,6 +47,11 @@ export default async function ProgramacionPage() {
         <p className="text-sm text-white/70 mt-1">
           Temas estructurados para las sesiones de mentoría
         </p>
+        {user.role === "SUPERVISOR" && (
+          <Badge className="mt-3 bg-[#eec058]/20 text-[#eec058] border-[#eec058]/30 text-[10px] uppercase tracking-wider">
+            Modo edición
+          </Badge>
+        )}
       </div>
 
       <div className="grid gap-3">
@@ -62,61 +71,35 @@ export default async function ProgramacionPage() {
             );
           }
 
+          const tc = contentMap.get(item.number);
+
+          // Hide topics marked invisible from non-supervisors
+          if (user.role !== "SUPERVISOR" && tc?.visible === false) {
+            return null;
+          }
+
           const completed = completedTopics.get(item.title);
-          const isCompleted = !!completed;
+
+          const topicContentProp = tc
+            ? {
+                content: tc.content,
+                links: tc.links as { label: string; url: string }[],
+                visible: tc.visible,
+              }
+            : null;
 
           return (
-            <Card
+            <TopicAccordionItem
               key={item.number}
-              className={`border-none transition-shadow ${
-                isCompleted
-                  ? "shadow-[0_4px_16px_rgba(2,36,72,0.04)] bg-[#1e3a5f]/5 border-l-4 border-l-[#1e3a5f]"
-                  : "shadow-[0_4px_16px_rgba(2,36,72,0.04)] hover:shadow-[0_8px_24px_rgba(2,36,72,0.08)]"
-              }`}
-            >
-              <CardHeader className="py-4">
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold shrink-0 ${
-                      isCompleted
-                        ? "bg-[#1e3a5f] text-white"
-                        : "bg-[#1e3a5f]/10 text-[#1e3a5f]"
-                    }`}
-                  >
-                    {isCompleted ? (
-                      <Check className="h-5 w-5" />
-                    ) : (
-                      item.number
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] uppercase tracking-wider ${
-                          isCompleted ? "border-[#1e3a5f]/30 text-[#1e3a5f]" : ""
-                        }`}
-                      >
-                        Tema {item.number}
-                      </Badge>
-                      {isCompleted && (
-                        <Badge className="bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f]/15 text-[10px]">
-                          Completado
-                        </Badge>
-                      )}
-                    </div>
-                    <CardTitle className="text-sm font-semibold text-[#022448]">
-                      {item.title}
-                    </CardTitle>
-                    {isCompleted && completed.notes && (
-                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic">
-                        {completed.notes}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
+              topic={{ number: item.number, title: item.title }}
+              topicContent={topicContentProp}
+              completed={
+                completed
+                  ? { notes: completed.notes, date: completed.date.toISOString() }
+                  : null
+              }
+              userRole={user.role!}
+            />
           );
         })}
       </div>
