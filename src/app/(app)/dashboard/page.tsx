@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
+import { StudentTabs } from "@/components/student-tabs";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/lib/button-variants";
 import Link from "next/link";
@@ -25,8 +26,13 @@ import {
 import { cn } from "@/lib/utils";
 import { TOPIC_ITEMS } from "@/lib/programming-topics";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ alumno?: string }>;
+}) {
   const user = await getCurrentUser();
+  const { alumno } = await searchParams;
 
   if (user.role === "SUPERVISOR") {
     return <SupervisorDashboard userId={user.id} />;
@@ -36,12 +42,21 @@ export default async function DashboardPage() {
     return <SubstituteDashboard userId={user.id} userName={user.name ?? "Suplente"} />;
   }
 
-  return <MentorDashboard userId={user.id} userName={user.name ?? "Mentor"} />;
+  return <MentorDashboard userId={user.id} userName={user.name ?? "Mentor"} alumnoId={alumno} />;
 }
 
-async function MentorDashboard({ userId, userName }: { userId: string; userName: string }) {
+async function MentorDashboard({
+  userId,
+  userName,
+  alumnoId,
+}: {
+  userId: string;
+  userName: string;
+  alumnoId?: string;
+}) {
   const students = await prisma.student.findMany({
     where: { mentorId: userId },
+    orderBy: { name: "asc" },
     include: {
       sessions: {
         orderBy: { date: "desc" },
@@ -54,18 +69,19 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
     },
   });
 
-  const student = students[0] ?? null;
+  const activeStudent =
+    students.find((s) => s.id === alumnoId) ?? students[0] ?? null;
 
-  const sessionCount = student
-    ? await prisma.session.count({ where: { studentId: student.id } })
+  const sessionCount = activeStudent
+    ? await prisma.session.count({ where: { studentId: activeStudent.id } })
     : 0;
 
-  const lastSession = student?.sessions[0];
+  const lastSession = activeStudent?.sessions[0];
   const nextTopic = TOPIC_ITEMS[sessionCount] ?? TOPIC_ITEMS[0];
   const totalTopics = TOPIC_ITEMS.length;
 
   // Calculate initials for avatar
-  const studentInitials = student?.name
+  const studentInitials = activeStudent?.name
     .split(" ")
     .map((n) => n[0])
     .slice(0, 2)
@@ -74,6 +90,12 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
+      {students.length > 1 && (
+        <StudentTabs
+          students={students.map((s) => ({ id: s.id, name: s.name }))}
+          activeId={activeStudent?.id ?? ""}
+        />
+      )}
       {/* Welcome Hero */}
       <header className="relative overflow-hidden rounded-2xl bg-[#1e3a5f] p-10 md:p-12 text-white">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
@@ -99,7 +121,7 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#022448]/50 to-transparent pointer-events-none"></div>
       </header>
 
-      {!student ? (
+      {!activeStudent ? (
         <div className="bg-white p-6 rounded-xl shadow-[0_12px_32px_rgba(2,36,72,0.06)] flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-muted-foreground" />
           <p className="text-muted-foreground">No tienes un estudiante asignado aún. Contacta a tu supervisor.</p>
@@ -120,9 +142,9 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-[#022448] mb-1">{student.name}</h2>
+              <h2 className="text-2xl font-bold text-[#022448] mb-1">{activeStudent.name}</h2>
               <p className="text-muted-foreground font-medium mb-6">
-                {student.age} años · {student.grade}
+                {activeStudent.age} años · {activeStudent.grade}
               </p>
 
               {/* Stats */}
@@ -155,7 +177,7 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
                   Nueva Sesión
                 </Link>
                 <Link
-                  href={`/estudiantes/${student.id}`}
+                  href={`/estudiantes/${activeStudent.id}`}
                   className="w-full py-4 bg-white text-[#022448] border border-[#c4c6cf] rounded-full font-bold hover:bg-[#f4f3f7] transition-all flex items-center justify-center"
                 >
                   Ver Perfil Completo
@@ -267,7 +289,7 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
                 </div>
                 <div className="mt-8 pt-6 border-t border-[#c4c6cf]/10 flex justify-end">
                   <Link
-                    href={`/estudiantes/${student.id}`}
+                    href={`/estudiantes/${activeStudent.id}`}
                     className="text-[#022448] font-bold flex items-center gap-2 hover:translate-x-1 transition-transform text-sm"
                   >
                     Ver resumen detallado
@@ -296,7 +318,7 @@ async function MentorDashboard({ userId, userName }: { userId: string; userName:
                 <p className="text-xs text-muted-foreground">Objetivos y seguimiento.</p>
               </Link>
               <Link
-                href={`/estudiantes/${student.id}`}
+                href={`/estudiantes/${activeStudent.id}`}
                 className="bg-[#e9e7eb] p-6 rounded-xl flex flex-col items-center text-center gap-2 cursor-pointer hover:bg-[#dad9dd] transition-colors"
               >
                 <MessageSquare className="h-8 w-8 text-[#43474e] mb-2" />
