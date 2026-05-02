@@ -4,27 +4,43 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
 import { PROGRAMMING_TOPICS } from "@/lib/programming-topics";
 import { TopicAccordionItem } from "@/components/topic-accordion-item";
+import { StudentTabs } from "@/components/student-tabs";
 
-export default async function ProgramacionPage() {
+export default async function ProgramacionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ alumno?: string }>;
+}) {
   const user = await getCurrentUser();
+  const { alumno } = await searchParams;
 
   // Fetch topic content from DB
   const allContent = await prisma.topicContent.findMany();
   const contentMap = new Map(allContent.map((tc) => [tc.topicNumber, tc]));
 
-  // For mentors, fetch their student's completed sessions
+  // For mentors, fetch all their students and resolve the active one
   let completedTopics = new Map<string, { notes: string; date: Date }>();
+  let allStudents: { id: string; name: string }[] = [];
+  let activeStudentId: string | undefined;
+
   if (user.role === "MENTOR") {
-    const student = await prisma.student.findFirst({
+    const students = await prisma.student.findMany({
       where: { mentorId: user.id },
+      orderBy: { name: "asc" },
       include: {
         sessions: {
           select: { formationTopic: true, notes: true, date: true },
         },
       },
     });
-    if (student) {
-      for (const session of student.sessions) {
+
+    allStudents = students.map((s) => ({ id: s.id, name: s.name }));
+    const activeStudent =
+      students.find((s) => s.id === alumno) ?? students[0] ?? null;
+    activeStudentId = activeStudent?.id;
+
+    if (activeStudent) {
+      for (const session of activeStudent.sessions) {
         completedTopics.set(session.formationTopic, {
           notes: session.notes,
           date: session.date,
@@ -53,6 +69,10 @@ export default async function ProgramacionPage() {
           </Badge>
         )}
       </div>
+
+      {user.role === "MENTOR" && allStudents.length > 1 && activeStudentId && (
+        <StudentTabs students={allStudents} activeId={activeStudentId} />
+      )}
 
       <div className="grid gap-3">
         {PROGRAMMING_TOPICS.map((item, index) => {
