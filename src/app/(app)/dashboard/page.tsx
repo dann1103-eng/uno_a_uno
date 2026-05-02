@@ -315,7 +315,7 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
   const [mentors, students, recentSessions, mentorActivity] = await Promise.all([
     prisma.user.findMany({
       where: { role: "MENTOR" },
-      include: { student: true },
+      include: { students: { select: { id: true } } },
     }),
     prisma.student.findMany({
       include: { mentor: true },
@@ -342,7 +342,7 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
   ]);
 
   const sessionCount = await prisma.session.count();
-  const mentorsWithoutStudent = mentors.filter((m) => !m.student);
+  const mentorsWithoutStudent = mentors.filter((m) => m.students.length === 0);
   const studentsWithoutMentor = students.filter((s) => !s.mentor).length;
 
   return (
