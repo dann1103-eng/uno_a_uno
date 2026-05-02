@@ -90,10 +90,10 @@ async function main() {
   // Create sample sessions for the first two mentor-student pairs
   const firstMentor = await prisma.user.findUnique({
     where: { email: "eduardo.lima@mentores.com" },
-    include: { student: true },
+    include: { students: { select: { id: true } } },
   });
 
-  if (firstMentor?.student) {
+  if (firstMentor?.students[0]) {
     const sessionTopics = ["La Prudencia", "La Fortaleza", "La Templanza"];
     const evaluations = [
       { discipline: 3, responsibility: 3, study: 2, relationships: 4, family: 3, piety: 3 },
@@ -104,7 +104,7 @@ async function main() {
     for (let i = 0; i < sessionTopics.length; i++) {
       await prisma.session.create({
         data: {
-          studentId: firstMentor.student.id,
+          studentId: firstMentor.students[0].id,
           mentorId: firstMentor.id,
           date: new Date(`2026-02-${10 + i * 7}`),
           formationTopic: sessionTopics[i],
@@ -119,10 +119,10 @@ async function main() {
 
   const secondMentor = await prisma.user.findUnique({
     where: { email: "eduardo.garcia@mentores.com" },
-    include: { student: true },
+    include: { students: { select: { id: true } } },
   });
 
-  if (secondMentor?.student) {
+  if (secondMentor?.students[0]) {
     const sessionTopics = ["La Prudencia", "La Fortaleza"];
     const evaluations = [
       { discipline: 2, responsibility: 3, study: 3, relationships: 3, family: 2, piety: 3 },
@@ -132,7 +132,7 @@ async function main() {
     for (let i = 0; i < sessionTopics.length; i++) {
       await prisma.session.create({
         data: {
-          studentId: secondMentor.student.id,
+          studentId: secondMentor.students[0].id,
           mentorId: secondMentor.id,
           date: new Date(`2026-02-${10 + i * 7}`),
           formationTopic: sessionTopics[i],
