@@ -11,7 +11,7 @@ export default async function MentoresPage() {
   const mentors = await prisma.user.findMany({
     where: { role: "MENTOR" },
     include: {
-      student: true,
+      students: { select: { id: true, name: true } },
       sessions: { select: { id: true } },
     },
     orderBy: { name: "asc" },
@@ -45,15 +45,19 @@ export default async function MentoresPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{mentor.email}</TableCell>
                   <TableCell>
-                    {mentor.student ? (
+                    {mentor.students.length === 0 ? (
+                      <Badge variant="outline">Sin estudiante</Badge>
+                    ) : mentor.students.length === 1 ? (
                       <Link
-                        href={`/estudiantes/${mentor.student.id}`}
+                        href={`/estudiantes/${mentor.students[0].id}`}
                         className="text-primary hover:underline"
                       >
-                        {mentor.student.name}
+                        {mentor.students[0].name}
                       </Link>
                     ) : (
-                      <Badge variant="outline">Sin estudiante</Badge>
+                      <Badge variant="secondary">
+                        {mentor.students.length} alumnos
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>{mentor.sessions.length}</TableCell>

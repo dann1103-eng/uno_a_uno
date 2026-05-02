@@ -21,7 +21,7 @@ export default async function MentorProfilePage({
   const mentor = await prisma.user.findUnique({
     where: { id },
     include: {
-      student: true,
+      students: { select: { id: true, name: true } },
       sessions: {
         include: { student: true },
         orderBy: { date: "asc" },
@@ -58,18 +58,23 @@ export default async function MentorProfilePage({
             <Mail className="h-4 w-4" />
             {mentor.email}
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
             <User className="h-4 w-4" />
-            Alumno asignado:{" "}
-            {mentor.student ? (
-              <Link
-                href={`/estudiantes/${mentor.student.id}`}
-                className="text-primary font-medium hover:underline"
-              >
-                {mentor.student.name}
-              </Link>
-            ) : (
+            Alumnos asignados:{" "}
+            {mentor.students.length === 0 ? (
               <Badge variant="outline">Sin estudiante</Badge>
+            ) : (
+              mentor.students.map((s, i) => (
+                <span key={s.id}>
+                  <Link
+                    href={`/estudiantes/${s.id}`}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    {s.name}
+                  </Link>
+                  {i < mentor.students.length - 1 && ", "}
+                </span>
+              ))
             )}
           </div>
         </div>
