@@ -7,11 +7,12 @@ export default async function MiEstudiantePage() {
 
   if (user.role !== "MENTOR") redirect("/dashboard");
 
-  const student = await prisma.student.findUnique({
+  const student = await prisma.student.findFirst({
     where: { mentorId: user.id },
+    orderBy: { name: "asc" },
   });
 
   if (!student) redirect("/dashboard");
 
-  redirect(`/estudiantes/${student.id}`);
+  redirect(`/dashboard?alumno=${student.id}`);
 }

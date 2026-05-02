@@ -7,8 +7,9 @@ export default async function MetasPage() {
 
   if (user.role !== "MENTOR") redirect("/dashboard");
 
-  const student = await prisma.student.findUnique({
+  const student = await prisma.student.findFirst({
     where: { mentorId: user.id },
+    orderBy: { name: "asc" },
   });
 
   if (!student) redirect("/dashboard");
