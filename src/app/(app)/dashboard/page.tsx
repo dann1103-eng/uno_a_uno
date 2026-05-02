@@ -322,7 +322,7 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
     }),
     prisma.session.findMany({
       orderBy: { date: "desc" },
-      take: 5,
+      take: 15,
       include: { student: true, mentor: { select: { name: true, role: true } } },
     }),
     prisma.user.findMany({
@@ -429,9 +429,9 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
             <h3 className="text-xl font-bold text-[#022448]">Sesiones Recientes</h3>
             <Clock className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-auto max-h-[420px]">
             <table className="w-full text-left">
-              <thead className="bg-[#f4f3f7]">
+              <thead className="bg-[#f4f3f7] sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
                     Fecha
