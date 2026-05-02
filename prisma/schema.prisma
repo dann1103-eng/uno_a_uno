@@ -26,7 +26,7 @@ model User {
   role         Role      @default(MENTOR)
   createdAt    DateTime  @default(now())
 
-  student      Student?
+  students     Student[]
   sessions     Session[]
 
   @@map("users")
@@ -37,7 +37,7 @@ model Student {
   name      String
   age       Int
   grade     String
-  mentorId  String?   @unique
+  mentorId  String?
   createdAt DateTime  @default(now())
 
   mentor    User?     @relation(fields: [mentorId], references: [id])

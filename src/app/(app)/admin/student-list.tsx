@@ -16,7 +16,7 @@ type Student = {
   mentor: { id: string; name: string } | null;
 };
 
-type Mentor = { id: string; name: string; hasStudent: boolean };
+type Mentor = { id: string; name: string; studentCount: number };
 
 export function StudentList({ students, mentors }: { students: Student[]; mentors: Mentor[] }) {
   const [reassigning, setReassigning] = useState<string | null>(null);
@@ -24,8 +24,6 @@ export function StudentList({ students, mentors }: { students: Student[]; mentor
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const availableMentors = mentors.filter((m) => !m.hasStudent);
 
   async function handleReassign(studentId: string) {
     setError("");
@@ -101,9 +99,9 @@ export function StudentList({ students, mentors }: { students: Student[]; mentor
                       <SelectValue placeholder="Nuevo mentor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableMentors.map((m) => (
+                      {mentors.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
-                          {m.name}
+                          {m.name}{m.studentCount > 0 ? ` (${m.studentCount} ${m.studentCount === 1 ? "alumno" : "alumnos"})` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -11,14 +11,14 @@ export default async function AdminPage() {
   const currentUser = await getCurrentUser();
   if (currentUser.role !== "SUPERVISOR") notFound();
 
-  const [users, mentorsWithStudents, students] = await Promise.all([
+  const [users, mentors, students] = await Promise.all([
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     }),
     prisma.user.findMany({
       where: { role: "MENTOR" },
-      select: { id: true, name: true, student: { select: { id: true } } },
+      select: { id: true, name: true, _count: { select: { students: true } } },
     }),
     prisma.student.findMany({
       orderBy: { createdAt: "desc" },
@@ -26,10 +26,10 @@ export default async function AdminPage() {
     }),
   ]);
 
-  const mentorsForForm = mentorsWithStudents.map((m) => ({
+  const mentorsForForm = mentors.map((m) => ({
     id: m.id,
     name: m.name,
-    hasStudent: !!m.student,
+    studentCount: m._count.students,
   }));
 
   const studentsForList = students.map((s) => ({

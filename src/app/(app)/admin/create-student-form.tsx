@@ -9,15 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraduationCap } from "lucide-react";
 
-type Mentor = { id: string; name: string; hasStudent: boolean };
+type Mentor = { id: string; name: string; studentCount: number };
 
 export function CreateStudentForm({ mentors }: { mentors: Mentor[] }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [mentorId, setMentorId] = useState("");
-
-  const availableMentors = mentors.filter((m) => !m.hasStudent);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,9 +69,9 @@ export function CreateStudentForm({ mentors }: { mentors: Mentor[] }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Sin asignar</SelectItem>
-                  {availableMentors.map((m) => (
+                  {mentors.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
-                      {m.name}
+                      {m.name}{m.studentCount > 0 ? ` (${m.studentCount} ${m.studentCount === 1 ? "alumno" : "alumnos"})` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>

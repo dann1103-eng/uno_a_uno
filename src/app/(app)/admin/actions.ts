@@ -56,15 +56,10 @@ export async function createStudent(formData: FormData) {
   if (mentorId) {
     const mentor = await prisma.user.findUnique({
       where: { id: mentorId, role: "MENTOR" },
-      include: { student: true },
     });
 
     if (!mentor) {
       throw new Error("El mentor seleccionado no existe");
-    }
-
-    if (mentor.student) {
-      throw new Error("Este mentor ya tiene un alumno asignado");
     }
   }
 
@@ -88,18 +83,12 @@ export async function reassignStudent(formData: FormData) {
     throw new Error("Todos los campos son obligatorios");
   }
 
-  // Verify the new mentor doesn't already have a student
   const newMentor = await prisma.user.findUnique({
     where: { id: newMentorId, role: "MENTOR" },
-    include: { student: true },
   });
 
   if (!newMentor) {
     throw new Error("El mentor seleccionado no existe");
-  }
-
-  if (newMentor.student) {
-    throw new Error("Este mentor ya tiene un alumno asignado");
   }
 
   await prisma.student.update({
@@ -142,18 +131,16 @@ export async function deleteUser(formData: FormData) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { student: true },
+    include: { students: { select: { id: true } } },
   });
 
   if (!user) throw new Error("Usuario no encontrado");
 
-  // Unassign their student first (if any)
-  if (user.student) {
-    await prisma.student.update({
-      where: { id: user.student.id },
-      data: { mentorId: null },
-    });
-  }
+  // Unassign all their students first (if any)
+  await prisma.student.updateMany({
+    where: { mentorId: userId },
+    data: { mentorId: null },
+  });
 
   // Sessions will have mentorId set to null via onDelete: SetNull
   await prisma.user.delete({ where: { id: userId } });
