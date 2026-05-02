@@ -131,7 +131,6 @@ export async function deleteUser(formData: FormData) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { students: { select: { id: true } } },
   });
 
   if (!user) throw new Error("Usuario no encontrado");
