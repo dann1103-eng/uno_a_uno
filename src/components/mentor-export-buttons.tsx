@@ -133,7 +133,9 @@ export function MentorExportButtons({ mentorName, sessions }: Props) {
       const a = document.createElement("a");
       a.href = url;
       a.download = `reporte-${safeName}-${dateStr}.pdf`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } finally {
       setLoadingPdf(false);
