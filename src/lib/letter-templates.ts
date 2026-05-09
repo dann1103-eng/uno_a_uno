@@ -9,7 +9,7 @@ El Programa de Mentoría Uno a Uno reconoce el compromiso y la labor de ${mentor
 
 Cabe destacar que la participación de ${mentorName} implica una dedicación constante a lo largo del ciclo escolar, asistiendo puntualmente a las sesiones programadas y manteniendo una comunicación activa con el equipo coordinador del programa, lo que refleja su seriedad y entrega hacia esta causa.
 
-Se extiende la presente constancia a solicitud del interesado, en Guatemala, para los usos legales y personales que estime conveniente.`;
+Se extiende la presente constancia a solicitud del interesado, en El Salvador, para los usos legales y personales que estime conveniente.`;
 }
 
 export function getRecomendacionTemplate(mentorName: string): string {

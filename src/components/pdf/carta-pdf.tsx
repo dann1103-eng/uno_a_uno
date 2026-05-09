@@ -5,7 +5,7 @@ interface CartaPDFProps {
   body: string;
   signerName: string;
   signerTitle: string;
-  date: string; // formatted as "9 de mayo de 2026", rendered as "Guatemala, [date]"
+  date: string; // formatted as "9 de mayo de 2026", rendered as "El Salvador, [date]"
 }
 
 const styles = StyleSheet.create({
@@ -97,7 +97,7 @@ export function CartaPDF({ title, body, signerName, signerTitle, date }: CartaPD
         </View>
 
         {/* Date */}
-        <Text style={styles.date}>Guatemala, {date}</Text>
+        <Text style={styles.date}>El Salvador, {date}</Text>
 
         {/* Letter title */}
         <Text style={styles.letterTitle}>{title}</Text>
