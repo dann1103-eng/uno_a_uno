@@ -54,7 +54,7 @@ export function LetterModal({ mentorName, supervisorName, type }: LetterModalPro
     if (nextOpen) {
       // Reset to defaults on open
       setBody(getDefaultBody(type, mentorName));
-      setSignerName(supervisorName ?? "Coordinador del Programa");
+      setSignerName(supervisorName);
       setSignerTitle("Coordinador del Programa");
       setError(null);
     }
