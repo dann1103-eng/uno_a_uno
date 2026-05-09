@@ -37,7 +37,7 @@ Letters are generated as downloadable PDFs. The supervisor can edit the full bod
 
 | File | Change |
 |---|---|
-| `src/app/(app)/mentores/[id]/page.tsx` | Add two `LetterModal` trigger buttons visible only when `user.role === "SUPERVISOR"`. Pass `mentorName` and `user.name` (supervisor) as props. |
+| `src/app/(app)/mentores/[id]/page.tsx` | Capture the return value of `requireRole`: `const user = await requireRole("SUPERVISOR")`. Add two `LetterModal` trigger buttons (rendered unconditionally — the page is already hard-gated to supervisors). Pass `mentor.name` and `user.name` as props. |
 
 ### No DB changes required.
 
@@ -92,8 +92,7 @@ interface CartaPDFProps {
   body: string        // editable content from modal
   signerName: string  // editable in modal
   signerTitle: string // editable in modal
-  mentorName: string  // read-only, injected from system
-  date: string        // read-only, today's date formatted in Spanish
+  date: string        // formatted inside LetterModal, passed as string
 }
 ```
 
@@ -105,6 +104,7 @@ interface CartaPDFProps {
 - Body: justified text paragraphs with proper spacing
 - Signature block: centered, horizontal navy line above signer name, name in bold, title and program name below in gray
 - Font: serif (Times-Roman from react-pdf built-ins)
+- `date` is formatted by `LetterModal` before being passed: `new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })` — produces "9 de mayo de 2026". `CartaPDF` renders it as "Guatemala, [date]".
 
 ---
 
@@ -120,16 +120,18 @@ interface LetterModalProps {
 }
 ```
 
-**Internal state (resets on every open via `key` prop or `onOpenChange`):**
+**Internal state — resets via `onOpenChange`:** When the dialog closes (`open` transitions from `true` to `false`), reset all three state values back to their defaults. This keeps the parent page simple (no `key` prop needed).
+
 - `body: string` — initialized from template function
 - `signerName: string` — initialized from `supervisorName`
 - `signerTitle: string` — initialized from `"Coordinador del Programa"`
 
 **UI structure:**
-- Trigger: a `<Button>` (passed as `children` or rendered by parent)
+- Trigger: a `<Button>` rendered internally by `LetterModal`, with label derived from `type`: `"Carta de Constancia"` or `"Carta de Recomendación"`. No trigger is passed from outside.
 - `<Dialog>` from shadcn/ui
 - Inside dialog:
   - `<DialogHeader>` with title ("Carta de Constancia" or "Carta de Recomendación") and mentor name as subtitle
+  - The `title` prop passed to `CartaPDF` is derived from `type`: `"constancia"` → `"CARTA DE CONSTANCIA"`, `"recomendacion"` → `"CARTA DE RECOMENDACIÓN"`
   - `<Textarea>` for body (full editable content, ~8 rows)
   - Two `<Input>` fields: "Firmante" and "Cargo"
   - `<Button>` "Descargar PDF" — calls `pdf(<CartaPDF .../>).toBlob()`, creates object URL, triggers download
@@ -143,26 +145,33 @@ interface LetterModalProps {
 
 ### `src/app/(app)/mentores/[id]/page.tsx` changes
 
-After the existing mentor info section, add a conditional block:
-
+Change:
 ```tsx
-{user.role === "SUPERVISOR" && (
-  <div className="flex gap-3">
-    <LetterModal
-      mentorName={mentor.name}
-      supervisorName={user.name}
-      type="constancia"
-    />
-    <LetterModal
-      mentorName={mentor.name}
-      supervisorName={user.name}
-      type="recomendacion"
-    />
-  </div>
-)}
+await requireRole("SUPERVISOR");
+```
+To:
+```tsx
+const user = await requireRole("SUPERVISOR");
 ```
 
-The `LetterModal` component renders its own trigger button internally.
+Then after the existing header section (after the `MentorExportButtons` row), add:
+
+```tsx
+<div className="flex gap-3">
+  <LetterModal
+    mentorName={mentor.name}
+    supervisorName={user.name}
+    type="constancia"
+  />
+  <LetterModal
+    mentorName={mentor.name}
+    supervisorName={user.name}
+    type="recomendacion"
+  />
+</div>
+```
+
+No conditional needed — the page is already hard-gated to supervisors via `requireRole("SUPERVISOR")`. `LetterModal` renders its own trigger button internally.
 
 ---
 
