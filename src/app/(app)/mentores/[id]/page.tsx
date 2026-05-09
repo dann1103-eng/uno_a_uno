@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MentorExportButtons } from "@/components/mentor-export-buttons";
+import { LetterModal } from "@/components/letter-modal";
 import Link from "next/link";
 import { ArrowLeft, Mail, User } from "lucide-react";
 
@@ -15,7 +16,7 @@ export default async function MentorProfilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRole("SUPERVISOR");
+  const user = await requireRole("SUPERVISOR");
   const { id } = await params;
 
   const mentor = await prisma.user.findUnique({
@@ -79,6 +80,19 @@ export default async function MentorProfilePage({
           </div>
         </div>
         <MentorExportButtons mentorName={mentor.name ?? "tutor"} sessions={sessionRows} />
+      </div>
+
+      <div className="flex gap-3 flex-wrap">
+        <LetterModal
+          mentorName={mentor.name ?? "Mentor"}
+          supervisorName={user.name ?? "Coordinador"}
+          type="constancia"
+        />
+        <LetterModal
+          mentorName={mentor.name ?? "Mentor"}
+          supervisorName={user.name ?? "Coordinador"}
+          type="recomendacion"
+        />
       </div>
 
       {/* Stats */}
