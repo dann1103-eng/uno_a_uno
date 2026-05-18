@@ -1,4 +1,8 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
+
+// Resolved at runtime in the browser (PDF is always generated client-side)
+const LOGO_SRC =
+  typeof window !== "undefined" ? `${window.location.origin}/actua-logo.png` : "";
 
 interface CartaPDFProps {
   title: "CARTA DE CONSTANCIA" | "CARTA DE RECOMENDACIÓN";
@@ -16,12 +20,20 @@ const styles = StyleSheet.create({
     color: "#1a1a1a",
     backgroundColor: "#ffffff",
   },
+  logo: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    width: 72,
+    height: 36,
+  },
   header: {
     textAlign: "center",
     borderBottomWidth: 2,
     borderBottomColor: "#1e3a5f",
     paddingBottom: 12,
     marginBottom: 16,
+    marginTop: 10,
   },
   programName: {
     fontSize: 13,
@@ -90,6 +102,9 @@ export function CartaPDF({ title, body, signerName, signerTitle, date }: CartaPD
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Logo — top-left corner */}
+        {LOGO_SRC ? <Image src={LOGO_SRC} style={styles.logo} /> : null}
+
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.programName}>PROGRAMA DE MENTORÍA UNO A UNO</Text>
