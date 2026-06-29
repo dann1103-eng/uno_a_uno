@@ -8,8 +8,7 @@ import { MentorExportButtons } from "@/components/mentor-export-buttons";
 import { LetterModal } from "@/components/letter-modal";
 import Link from "next/link";
 import { ArrowLeft, Mail, User } from "lucide-react";
-
-const HOURS_PER_SESSION = 3;
+import { HOURS_PER_SESSION } from "@/lib/hours";
 
 export default async function MentorProfilePage({
   params,

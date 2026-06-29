@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TOPIC_ITEMS } from "@/lib/programming-topics";
+import { HOURS_PER_SESSION } from "@/lib/hours";
 
 export default async function DashboardPage({
   searchParams,
@@ -72,13 +73,32 @@ async function MentorDashboard({
   const activeStudent =
     students.find((s) => s.id === alumnoId) ?? students[0] ?? null;
 
-  const sessionCount = activeStudent
-    ? await prisma.session.count({ where: { studentId: activeStudent.id } })
-    : 0;
+  // sessionCount = todas las sesiones del alumno (temas + catequesis).
+  // topicCount = solo temas de formación, para no descuadrar la progresión de los 21 temas.
+  const [sessionCount, topicCount] = activeStudent
+    ? await Promise.all([
+        prisma.session.count({ where: { studentId: activeStudent.id } }),
+        prisma.session.count({ where: { studentId: activeStudent.id, kind: "TOPIC" } }),
+      ])
+    : [0, 0];
 
   const lastSession = activeStudent?.sessions[0];
-  const nextTopic = TOPIC_ITEMS[sessionCount] ?? TOPIC_ITEMS[0];
+  const nextTopic = TOPIC_ITEMS[topicCount] ?? TOPIC_ITEMS[0];
   const totalTopics = TOPIC_ITEMS.length;
+
+  // Horas del tutor: todas las sesiones que ha dado (de todos sus alumnos).
+  const myHourSessions = await prisma.session.findMany({
+    where: { mentorId: userId },
+    orderBy: { date: "desc" },
+    select: {
+      id: true,
+      date: true,
+      formationTopic: true,
+      kind: true,
+      student: { select: { name: true } },
+    },
+  });
+  const myTotalHours = myHourSessions.length * HOURS_PER_SESSION;
 
   // Calculate initials for avatar
   const studentInitials = activeStudent?.name
@@ -162,7 +182,7 @@ async function MentorDashboard({
                     <span className="text-sm font-semibold">Progreso</span>
                   </div>
                   <span className="text-sm font-bold text-[#c89d39] bg-[#ffdf9f] px-3 py-1 rounded-full">
-                    Tema {Math.min(sessionCount + 1, totalTopics)} / {totalTopics}
+                    Tema {Math.min(topicCount + 1, totalTopics)} / {totalTopics}
                   </span>
                 </div>
               </div>
@@ -256,7 +276,7 @@ async function MentorDashboard({
                   <div className="space-y-6">
                     <div>
                       <label className="text-[0.65rem] font-bold tracking-widest text-muted-foreground uppercase mb-2 block">
-                        TEMA TRATADO
+                        {lastSession.kind === "CATEQUESIS" ? "ACTIVIDAD" : "TEMA TRATADO"}
                       </label>
                       <p className="text-xl font-bold text-[#022448]">{lastSession.formationTopic}</p>
                     </div>
@@ -298,6 +318,74 @@ async function MentorDashboard({
                 </div>
               </section>
             )}
+
+            {/* Mis Horas acumuladas (tutor) */}
+            <section className="bg-white p-8 rounded-xl shadow-[0_20px_40px_rgba(2,36,72,0.05)] border border-[#c4c6cf]/15">
+              <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-8 bg-[#eec058] rounded-full"></div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#022448]">Mis Horas</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Acumuladas en todas las sesiones que has dado
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-4xl font-extrabold text-[#795900] leading-none">{myTotalHours}h</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {myHourSessions.length} {myHourSessions.length === 1 ? "sesión" : "sesiones"} × {HOURS_PER_SESSION}h
+                  </p>
+                </div>
+              </div>
+              {myHourSessions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  Aún no has registrado sesiones.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-[#c4c6cf]/20">
+                        <th className="py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Fecha</th>
+                        <th className="py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Alumno</th>
+                        <th className="py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tema / Tipo</th>
+                        <th className="py-2 text-right text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Horas</th>
+                        <th className="py-2 text-right text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Acumulado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#c4c6cf]/10">
+                      {myHourSessions.map((s, i) => {
+                        const accumulated = (myHourSessions.length - i) * HOURS_PER_SESSION;
+                        return (
+                          <tr key={s.id}>
+                            <td className="py-3 text-sm text-muted-foreground whitespace-nowrap">
+                              {new Date(s.date).toLocaleDateString("es-ES")}
+                            </td>
+                            <td className="py-3 text-sm font-medium text-[#1e3a5f]">{s.student.name}</td>
+                            <td className="py-3 text-sm">
+                              {s.kind === "CATEQUESIS" ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ffdf9f]/60 text-[#5b4300] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide">
+                                  <BookOpen className="h-3 w-3" /> Catequesis
+                                </span>
+                              ) : (
+                                s.formationTopic
+                              )}
+                            </td>
+                            <td className="py-3 text-right text-sm font-medium text-[#43474e] whitespace-nowrap">
+                              +{HOURS_PER_SESSION}h
+                            </td>
+                            <td className="py-3 text-right text-sm font-bold text-[#795900] whitespace-nowrap">
+                              {accumulated}h
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
 
             {/* Quick Resources Bento */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -571,7 +659,7 @@ async function SupervisorDashboard({ userId: _userId }: { userId: string }) {
             <div className="space-y-2">
               {mentorActivity.map((m) => {
                 const lastSession = m.sessions[0];
-                const hours = m._count.sessions * 3;
+                const hours = m._count.sessions * HOURS_PER_SESSION;
                 return (
                   <Link
                     key={m.id}

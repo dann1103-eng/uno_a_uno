@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { createSession } from "@/app/(app)/sesiones/actions";
 import { Lightbulb } from "lucide-react";
@@ -43,8 +43,10 @@ export function SessionForm({ topics, students }: { topics: Topic[]; students: S
   const [selectedStudent, setSelectedStudent] = useState(
     students.length === 1 ? students[0].id : ""
   );
+  const [topic, setTopic] = useState("");
   const submittingRef = useRef(false);
-  const tipIndex = Math.floor(Math.random() * tips.length);
+  // Se elige una vez al montar (no en cada render) para evitar impureza/hydration mismatch.
+  const [tipIndex] = useState(() => Math.floor(Math.random() * tips.length));
 
   async function handleSubmit(formData: FormData) {
     if (submittingRef.current) return;
@@ -136,17 +138,30 @@ export function SessionForm({ topics, students }: { topics: Topic[]; students: S
                 Tema Principal
               </Label>
               {topics.length > 0 ? (
-                <Select name="formationTopic" required>
+                <Select
+                  name="formationTopic"
+                  value={topic}
+                  onValueChange={(v) => v && setTopic(v)}
+                  required
+                >
                   <SelectTrigger className="w-full bg-[#f4f3f7] border-none rounded-lg p-3 text-sm">
                     <SelectValue placeholder="Seleccionar tema..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {topics.map((t) => (
-                      <SelectItem key={t.id} value={t.title}>
-                        {t.weekNumber}. {t.title}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="otro">Otro</SelectItem>
+                    <SelectGroup>
+                      <SelectLabel>Temas de formación</SelectLabel>
+                      {topics.map((t) => (
+                        <SelectItem key={t.id} value={t.title}>
+                          {t.weekNumber}. {t.title}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                    <SelectSeparator />
+                    <SelectGroup>
+                      <SelectLabel>Otras actividades</SelectLabel>
+                      <SelectItem value="Catequesis">Catequesis</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                    </SelectGroup>
                   </SelectContent>
                 </Select>
               ) : (
@@ -157,6 +172,12 @@ export function SessionForm({ topics, students }: { topics: Topic[]; students: S
                   className="w-full bg-[#f4f3f7] border-none rounded-lg p-3 text-sm"
                 />
               )}
+              {/* El tipo de sesión se deriva del tema elegido: "Catequesis" => CATEQUESIS */}
+              <input
+                type="hidden"
+                name="kind"
+                value={topic === "Catequesis" ? "CATEQUESIS" : "TOPIC"}
+              />
             </div>
           </div>
 

@@ -18,6 +18,11 @@ enum GoalStatus {
   COMPLETED
 }
 
+enum SessionType {
+  TOPIC
+  CATEQUESIS
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -48,20 +53,22 @@ model Student {
 }
 
 model Session {
-  id             String    @id @default(cuid())
+  id             String      @id @default(cuid())
   studentId      String
   mentorId       String?
   date           DateTime
   formationTopic String
-  notes          String    @default("")
-  nextSteps      String    @default("")
-  createdAt      DateTime  @default(now())
+  kind           SessionType @default(TOPIC)
+  notes          String      @default("")
+  nextSteps      String      @default("")
+  createdAt      DateTime    @default(now())
 
   student        Student            @relation(fields: [studentId], references: [id])
   mentor         User?              @relation(fields: [mentorId], references: [id], onDelete: SetNull)
   evaluation     SessionEvaluation?
 
-  @@unique([studentId, formationTopic], name: "unique_student_topic")
+  // La unicidad de temas (kind=TOPIC) se valida en código (createSession) para
+  // permitir varias catequesis por alumno.
   @@map("sessions")
 }
 
