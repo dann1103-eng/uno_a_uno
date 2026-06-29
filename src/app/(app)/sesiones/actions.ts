@@ -32,14 +32,18 @@ export async function createSession(formData: FormData): Promise<{ error?: strin
 
   const date = formData.get("date") as string;
   const formationTopic = formData.get("formationTopic") as string;
+  const kind = formData.get("kind") === "CATEQUESIS" ? "CATEQUESIS" : "TOPIC";
   const notes = (formData.get("notes") as string) ?? "";
   const nextSteps = (formData.get("nextSteps") as string) ?? "";
 
-  const existingSession = await prisma.session.findFirst({
-    where: { studentId: student.id, formationTopic },
-  });
-  if (existingSession) {
-    return { error: "Ya existe una sesión registrada con este tema para este estudiante." };
+  // Las catequesis pueden repetirse; solo los temas de formación son únicos por alumno.
+  if (kind === "TOPIC") {
+    const existingSession = await prisma.session.findFirst({
+      where: { studentId: student.id, formationTopic, kind: "TOPIC" },
+    });
+    if (existingSession) {
+      return { error: "Ya existe una sesión registrada con este tema para este estudiante." };
+    }
   }
 
   const discipline = parseInt(formData.get("discipline") as string);
@@ -55,6 +59,7 @@ export async function createSession(formData: FormData): Promise<{ error?: strin
       mentorId: userId,
       date: new Date(date),
       formationTopic,
+      kind,
       notes,
       nextSteps,
       evaluation: {

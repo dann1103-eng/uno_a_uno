@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/lib/button-variants";
 import { MetricsRadarChart } from "@/components/metrics-radar-chart";
 import Link from "next/link";
-import { ArrowLeft, PlusCircle } from "lucide-react";
+import { ArrowLeft, PlusCircle, BookOpen } from "lucide-react";
 import { AddGoalDialog } from "@/components/add-goal-dialog";
 import { AddGoalUpdateDialog } from "@/components/add-goal-update-dialog";
 import { cn } from "@/lib/utils";
@@ -141,7 +141,13 @@ export default async function StudentProfilePage({
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-sm font-medium">
-                      {session.formationTopic}
+                      {session.kind === "CATEQUESIS" ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ffdf9f]/60 text-[#5b4300] px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide">
+                          <BookOpen className="h-3 w-3" /> Catequesis
+                        </span>
+                      ) : (
+                        session.formationTopic
+                      )}
                     </CardTitle>
                     {session.mentor && session.mentor.id !== student.mentorId && (
                       <p className="text-xs text-emerald-700 font-semibold mt-0.5">
