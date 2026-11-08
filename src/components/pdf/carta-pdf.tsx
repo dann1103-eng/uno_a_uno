@@ -5,11 +5,13 @@ const LOGO_SRC =
   typeof window !== "undefined" ? `${window.location.origin}/actua-logo.png` : "";
 
 interface CartaPDFProps {
-  title: "CARTA DE CONSTANCIA" | "CARTA DE RECOMENDACIÓN";
+  title: "CARTA DE CONSTANCIA" | "CARTA DE RECOMENDACIÓN" | "CONSTANCIA DE HORAS SOCIALES";
   body: string;
   signerName: string;
   signerTitle: string;
   date: string; // formatted as "9 de mayo de 2026", rendered as "El Salvador, [date]"
+  /** URL o ruta de la firma digitalizada. Si falta, solo se dibuja la línea de firma. */
+  signatureSrc?: string;
 }
 
 const styles = StyleSheet.create({
@@ -70,6 +72,13 @@ const styles = StyleSheet.create({
     marginTop: 48,
     alignItems: "center",
   },
+  // La firma (16:9) se solapa un poco con la línea para que quede "sobre" ella,
+  // sin llegar a pisar el nombre del firmante
+  signatureImage: {
+    width: 130,
+    height: 73,
+    marginBottom: -10,
+  },
   signatureLine: {
     borderBottomWidth: 1,
     borderBottomColor: "#1e3a5f",
@@ -95,7 +104,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export function CartaPDF({ title, body, signerName, signerTitle, date }: CartaPDFProps) {
+export function CartaPDF({
+  title,
+  body,
+  signerName,
+  signerTitle,
+  date,
+  signatureSrc,
+}: CartaPDFProps) {
   // Split body into paragraphs for individual <Text> rendering
   const paragraphs = body.split("\n\n").filter((p) => p.trim().length > 0);
 
@@ -125,7 +141,8 @@ export function CartaPDF({ title, body, signerName, signerTitle, date }: CartaPD
         ))}
 
         {/* Signature */}
-        <View style={styles.signatureBlock}>
+        <View style={styles.signatureBlock} wrap={false}>
+          {signatureSrc ? <Image src={signatureSrc} style={styles.signatureImage} /> : null}
           <View style={styles.signatureLine} />
           <Text style={styles.signerName}>{signerName}</Text>
           <Text style={styles.signerTitle}>{signerTitle}</Text>

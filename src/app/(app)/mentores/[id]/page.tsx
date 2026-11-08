@@ -9,13 +9,14 @@ import { LetterModal } from "@/components/letter-modal";
 import Link from "next/link";
 import { ArrowLeft, Mail, User } from "lucide-react";
 import { HOURS_PER_SESSION } from "@/lib/hours";
+import { formatLetterDate } from "@/lib/letter-templates";
 
 export default async function MentorProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireRole("SUPERVISOR");
+  await requireRole("SUPERVISOR");
   const { id } = await params;
 
   const mentor = await prisma.user.findUnique({
@@ -38,6 +39,12 @@ export default async function MentorProfilePage({
     studentName: s.student.name,
     topic: s.formationTopic,
   }));
+
+  // Sesiones ya vienen ordenadas por fecha ascendente
+  const firstSession = mentor.sessions[0];
+  const lastSession = mentor.sessions[mentor.sessions.length - 1];
+  const periodStart = firstSession ? formatLetterDate(firstSession.date) : "";
+  const periodEnd = lastSession ? formatLetterDate(lastSession.date) : "";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -82,15 +89,14 @@ export default async function MentorProfilePage({
       </div>
 
       <div className="flex gap-3 flex-wrap">
+        <LetterModal mentorName={mentor.name ?? "Mentor"} type="constancia" />
+        <LetterModal mentorName={mentor.name ?? "Mentor"} type="recomendacion" />
         <LetterModal
           mentorName={mentor.name ?? "Mentor"}
-          supervisorName={user.name ?? "Coordinador"}
-          type="constancia"
-        />
-        <LetterModal
-          mentorName={mentor.name ?? "Mentor"}
-          supervisorName={user.name ?? "Coordinador"}
-          type="recomendacion"
+          type="horas-sociales"
+          sessionCount={mentor.sessions.length}
+          periodStart={periodStart}
+          periodEnd={periodEnd}
         />
       </div>
 
