@@ -34,6 +34,12 @@ const SIGNATURE_PATH = "/firma-supervisor.png";
 interface LetterModalProps {
   mentorName: string;
   type: LetterType;
+  /**
+   * "supervisor" (por defecto): puede editar el texto, el firmante y la firma.
+   * "mentor": autoservicio del tutor; solo completa carrera, universidad y carnet
+   * y descarga la constancia de horas sociales con el texto y la firma por defecto.
+   */
+  variant?: "supervisor" | "mentor";
   /** Solo para "horas-sociales": sesiones registradas del tutor. */
   sessionCount?: number;
   /** Solo para "horas-sociales": fecha de la primera sesión, ya formateada. */
@@ -48,6 +54,8 @@ const LABELS = {
   "horas-sociales": "Constancia de Horas Sociales",
 } as const;
 
+const MENTOR_LABEL = "Solicitar constancia de horas sociales";
+
 const PDF_TITLES = {
   constancia: "CARTA DE CONSTANCIA",
   recomendacion: "CARTA DE RECOMENDACIÓN",
@@ -57,6 +65,7 @@ const PDF_TITLES = {
 export function LetterModal({
   mentorName,
   type,
+  variant = "supervisor",
   sessionCount = 0,
   periodStart = "",
   periodEnd = "",
@@ -73,7 +82,8 @@ export function LetterModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const label = LABELS[type];
+  const isMentor = variant === "mentor";
+  const label = isMentor ? MENTOR_LABEL : LABELS[type];
   const isSocialHours = type === "horas-sociales";
   const noSessions = isSocialHours && sessionCount === 0;
 
@@ -95,6 +105,8 @@ export function LetterModal({
 
   const missingSocialHoursData =
     isSocialHours && (!career.trim() || !university.trim() || !studentId.trim());
+
+  const sessionsSummary = `${sessionCount} ${sessionCount === 1 ? "sesión" : "sesiones"} · ${totalHours(sessionCount)} horas acumuladas`;
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
@@ -158,7 +170,13 @@ export function LetterModal({
         size="sm"
         onClick={() => handleOpenChange(true)}
         disabled={noSessions}
-        title={noSessions ? "Este tutor aún no tiene sesiones registradas" : undefined}
+        title={
+          noSessions
+            ? isMentor
+              ? "Aún no tienes sesiones registradas"
+              : "Este tutor aún no tiene sesiones registradas"
+            : undefined
+        }
       >
         <FileText className="h-4 w-4 mr-2" />
         {label}
@@ -169,93 +187,109 @@ export function LetterModal({
           <DialogHeader>
             <DialogTitle>{label}</DialogTitle>
             <DialogDescription>
-              {isSocialHours
-                ? `${mentorName} · ${sessionCount} ${sessionCount === 1 ? "sesión" : "sesiones"} · ${totalHours(sessionCount)} horas acumuladas`
-                : mentorName}
+              {isMentor
+                ? `${sessionsSummary}. Completa tus datos académicos y descarga tu constancia, que incluye la firma del supervisor.`
+                : isSocialHours
+                  ? `${mentorName} · ${sessionsSummary}`
+                  : mentorName}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             {isSocialHours && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="letter-career">Carrera</Label>
-                  <Input
-                    id="letter-career"
-                    value={career}
-                    onChange={(e) => setCareer(e.target.value)}
-                    placeholder="Ingeniería en Sistemas"
-                  />
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="letter-career">Carrera</Label>
+                    <Input
+                      id="letter-career"
+                      value={career}
+                      onChange={(e) => setCareer(e.target.value)}
+                      placeholder="Ingeniería en Sistemas"
+                      maxLength={120}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="letter-university">Universidad</Label>
+                    <Input
+                      id="letter-university"
+                      value={university}
+                      onChange={(e) => setUniversity(e.target.value)}
+                      placeholder="Universidad Don Bosco"
+                      maxLength={120}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="letter-student-id">Carnet</Label>
+                    <Input
+                      id="letter-student-id"
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      placeholder="AB123456"
+                      maxLength={30}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="letter-university">Universidad</Label>
-                  <Input
-                    id="letter-university"
-                    value={university}
-                    onChange={(e) => setUniversity(e.target.value)}
-                    placeholder="Universidad Don Bosco"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="letter-student-id">Carnet</Label>
-                  <Input
-                    id="letter-student-id"
-                    value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    placeholder="AB123456"
-                  />
-                </div>
-              </div>
+                {isMentor && (
+                  <p className="text-xs text-muted-foreground">
+                    Revisa que los datos estén correctos: aparecerán tal cual en la constancia.
+                  </p>
+                )}
+              </>
             )}
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label>Contenido de la carta</Label>
-                {editedBody !== null && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditedBody(null)}
-                  >
-                    Restablecer texto
-                  </Button>
-                )}
-              </div>
-              <Textarea
-                value={body}
-                onChange={(e) => setEditedBody(e.target.value)}
-                rows={10}
-                className="resize-none text-sm"
-              />
-            </div>
+            {!isMentor && (
+              <>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label>Contenido de la carta</Label>
+                    {editedBody !== null && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditedBody(null)}
+                      >
+                        Restablecer texto
+                      </Button>
+                    )}
+                  </div>
+                  <Textarea
+                    value={body}
+                    onChange={(e) => setEditedBody(e.target.value)}
+                    rows={10}
+                    className="resize-none text-sm"
+                  />
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Firmante</Label>
-                <Input
-                  value={signerName}
-                  onChange={(e) => setSignerName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Cargo</Label>
-                <Input
-                  value={signerTitle}
-                  onChange={(e) => setSignerTitle(e.target.value)}
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Firmante</Label>
+                    <Input
+                      value={signerName}
+                      onChange={(e) => setSignerName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Cargo</Label>
+                    <Input
+                      value={signerTitle}
+                      onChange={(e) => setSignerTitle(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={includeSignature}
-                onChange={(e) => setIncludeSignature(e.target.checked)}
-                className="h-4 w-4"
-              />
-              Incluir firma digitalizada
-            </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={includeSignature}
+                    onChange={(e) => setIncludeSignature(e.target.checked)}
+                    className="h-4 w-4"
+                  />
+                  Incluir firma digitalizada
+                </label>
+              </>
+            )}
 
             {error && (
               <p className="text-sm text-destructive">{error}</p>

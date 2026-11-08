@@ -26,6 +26,8 @@ import {
 import { cn } from "@/lib/utils";
 import { TOPIC_ITEMS } from "@/lib/programming-topics";
 import { HOURS_PER_SESSION } from "@/lib/hours";
+import { formatLetterDate } from "@/lib/letter-templates";
+import { LetterModal } from "@/components/letter-modal";
 
 export default async function DashboardPage({
   searchParams,
@@ -99,6 +101,12 @@ async function MentorDashboard({
     },
   });
   const myTotalHours = myHourSessions.length * HOURS_PER_SESSION;
+
+  // Período para la constancia de horas sociales (myHourSessions viene en orden descendente)
+  const newestHourSession = myHourSessions[0];
+  const oldestHourSession = myHourSessions[myHourSessions.length - 1];
+  const periodStart = oldestHourSession ? formatLetterDate(oldestHourSession.date) : "";
+  const periodEnd = newestHourSession ? formatLetterDate(newestHourSession.date) : "";
 
   // Calculate initials for avatar
   const studentInitials = activeStudent?.name
@@ -329,6 +337,16 @@ async function MentorDashboard({
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Acumuladas en todas las sesiones que has dado
                     </p>
+                    <div className="mt-3">
+                      <LetterModal
+                        mentorName={userName}
+                        type="horas-sociales"
+                        variant="mentor"
+                        sessionCount={myHourSessions.length}
+                        periodStart={periodStart}
+                        periodEnd={periodEnd}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
